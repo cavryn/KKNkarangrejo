@@ -1,11 +1,12 @@
 'use client';
-import { useState } from 'react';
-import { CheckCircle, Clock, Calendar, Filter, Search, Eye, X } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { CheckCircle, Clock, Calendar, Filter, Search, Eye, X, Target } from 'lucide-react';
 
 export default function ProkerSection({ prokerList }) {
   const [selectedCategory, setSelectedCategory] = useState('Semua');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeModalProker, setActiveModalProker] = useState(null);
+  const sectionRef = useRef(null);
 
   const categories = ['Semua', 'Ekonomi & UMKM', 'Lingkungan', 'Pendidikan', 'Kesehatan', 'Teknologi'];
 
@@ -16,16 +17,38 @@ export default function ProkerSection({ prokerList }) {
     return matchesCategory && matchesSearch;
   });
 
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const reveals = entry.target.querySelectorAll('.reveal');
+            reveals.forEach((el, i) => setTimeout(() => el.classList.add('visible'), i * 80));
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+    if (sectionRef.current) observer.observe(sectionRef.current);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <section id="proker" className="py-20 bg-slate-50 border-t border-slate-200 relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="proker" ref={sectionRef} className="py-20 bg-slate-50 border-t border-slate-100 relative">
+      <div className="absolute inset-0 bg-dot-pattern opacity-20 pointer-events-none" />
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-12 space-y-3">
-          <h2 className="text-3xl sm:text-4xl font-bold text-brand-navy">
-            Daftar <span className="text-brand-gold">Program Kerja KKN</span>
+        <div className="reveal text-center max-w-3xl mx-auto mb-12 space-y-3">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-xs font-bold text-brand-gold uppercase tracking-widest mb-3">
+            <Target className="w-3.5 h-3.5" />
+            <span>Program Pengabdian</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-navy">
+            Daftar <span className="text-gradient-gold">Program Kerja KKN</span>
           </h2>
-          <p className="text-base text-slate-600">
+          <p className="text-base text-slate-500">
             Dokumentasi rencana, pelaksanaan, dan capaian hasil proker Kelompok 3 di Desa Karangrejo.
           </p>
         </div>
@@ -58,7 +81,7 @@ export default function ProkerSection({ prokerList }) {
               placeholder="Cari nama proker..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white border border-slate-300 text-brand-navy text-sm rounded-full pl-10 pr-4 py-2 focus:outline-none focus:border-brand-gold shadow-sm transition-colors"
+              className="w-full bg-white border border-slate-200 text-brand-navy text-sm rounded-full pl-10 pr-4 py-2.5 focus:outline-none focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/20 shadow-card transition-all"
             />
           </div>
 
@@ -75,7 +98,7 @@ export default function ProkerSection({ prokerList }) {
             {filteredProker.map((proker) => (
               <div
                 key={proker.id}
-                className="group rounded-3xl bg-white border border-slate-200 hover:border-brand-gold/50 overflow-hidden flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 shadow-sm hover:shadow-xl"
+                className="reveal group rounded-3xl bg-white border border-slate-200 hover:border-brand-gold/60 overflow-hidden flex flex-col justify-between transition-all duration-300 hover:-translate-y-2 shadow-card hover:shadow-gold-lg"
               >
                 <div>
                   {/* Image & Status Badge */}
@@ -131,7 +154,7 @@ export default function ProkerSection({ prokerList }) {
                 <div className="px-6 pb-6 pt-2">
                   <button
                     onClick={() => setActiveModalProker(proker)}
-                    className="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-amber-50 hover:text-brand-gold text-brand-navy text-xs sm:text-sm font-bold border border-slate-200 hover:border-brand-gold/40 flex items-center justify-center gap-2 transition-all"
+                    className="w-full py-2.5 px-4 rounded-xl btn-shimmer bg-gradient-to-r from-slate-50 to-amber-50 hover:from-brand-gold hover:to-amber-500 hover:text-white text-brand-navy text-xs sm:text-sm font-bold border border-slate-200 hover:border-transparent flex items-center justify-center gap-2 transition-all duration-300 shadow-card"
                   >
                     <Eye className="w-4 h-4 text-brand-gold" />
                     <span>Lihat Detail Proker</span>

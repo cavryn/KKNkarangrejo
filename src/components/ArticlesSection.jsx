@@ -1,20 +1,43 @@
 'use client';
-import { useState } from 'react';
-import { Calendar, User, ArrowRight, X, BookMarked } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Calendar, User, ArrowRight, X, BookMarked, FileText } from 'lucide-react';
 
 export default function ArticlesSection({ articlesList }) {
   const [activeArticleModal, setActiveArticleModal] = useState(null);
+  const sectionRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const reveals = entry.target.querySelectorAll('.reveal');
+            reveals.forEach((el, i) => setTimeout(() => el.classList.add('visible'), i * 80));
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+    if (sectionRef.current) observer.observe(sectionRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <section id="artikel" className="py-20 bg-slate-50 border-t border-slate-200 relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="artikel" ref={sectionRef} className="py-20 bg-slate-50 border-t border-slate-100 relative">
+      <div className="absolute inset-0 bg-dot-pattern opacity-20 pointer-events-none" />
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-12 space-y-3">
-          <h2 className="text-3xl sm:text-4xl font-bold text-brand-navy">
-            Materi Edukasi & <span className="text-brand-gold">Panduan Proker</span>
+        <div className="reveal text-center max-w-3xl mx-auto mb-12 space-y-3">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-xs font-bold text-brand-gold uppercase tracking-widest mb-3">
+            <FileText className="w-3.5 h-3.5" />
+            <span>Modul & Artikel</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-navy">
+            Materi Edukasi & <span className="text-gradient-gold">Panduan Proker</span>
           </h2>
-          <p className="text-base text-slate-600">
+          <p className="text-base text-slate-500">
             Kumpulan artikel edukatif dan modul praktis hasil proker KKN yang dapat dibaca dan dimanfaatkan secara gratis.
           </p>
         </div>
@@ -24,7 +47,7 @@ export default function ArticlesSection({ articlesList }) {
           {articlesList.map((article) => (
             <div
               key={article.id}
-              className="p-6 rounded-3xl bg-white border border-slate-200 hover:border-brand-gold/50 transition-all flex flex-col justify-between group hover:-translate-y-1 shadow-sm hover:shadow-xl"
+              className="reveal p-6 rounded-3xl bg-white border border-slate-200 hover:border-brand-gold/60 transition-all duration-300 flex flex-col justify-between group hover:-translate-y-2 shadow-card hover:shadow-gold-lg"
             >
               <div className="space-y-4">
                 <div className="relative h-52 rounded-2xl overflow-hidden bg-slate-100">
@@ -63,7 +86,7 @@ export default function ArticlesSection({ articlesList }) {
               <div className="pt-6">
                 <button
                   onClick={() => setActiveArticleModal(article)}
-                  className="w-full py-3 px-4 rounded-2xl bg-amber-50 hover:bg-brand-gold text-brand-gold hover:text-white font-bold text-sm border border-amber-200 flex items-center justify-center gap-2 transition-all group/btn shadow-sm"
+                  className="btn-shimmer w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-amber-50 to-slate-50 hover:from-brand-gold hover:to-amber-500 text-brand-gold hover:text-white font-bold text-sm border border-amber-200 hover:border-transparent flex items-center justify-center gap-2 transition-all duration-300 group/btn shadow-card"
                 >
                   <BookMarked className="w-4 h-4" />
                   <span>Baca Modul Selengkapnya</span>

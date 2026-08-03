@@ -1,16 +1,34 @@
 'use client';
-import { useState } from 'react';
-import { Maximize2, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Maximize2, X, ChevronLeft, ChevronRight, Camera } from 'lucide-react';
 
 export default function GallerySection({ galleryList }) {
   const [activeCategory, setActiveCategory] = useState('Semua');
   const [lightboxIndex, setLightboxIndex] = useState(null);
+  const sectionRef = useRef(null);
 
   const categories = ['Semua', 'Lingkungan', 'Ekonomi & UMKM', 'Kesehatan', 'Pendidikan', 'Teknologi'];
 
   const filteredGallery = galleryList.filter(item => 
     activeCategory === 'Semua' || item.prokerCategory === activeCategory
   );
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const reveals = entry.target.querySelectorAll('.reveal');
+            reveals.forEach((el, i) => setTimeout(() => el.classList.add('visible'), i * 60));
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+    if (sectionRef.current) observer.observe(sectionRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   const openLightbox = (index) => setLightboxIndex(index);
   const closeLightbox = () => setLightboxIndex(null);
@@ -28,15 +46,19 @@ export default function GallerySection({ galleryList }) {
   };
 
   return (
-    <section id="dokumentasi" className="py-20 bg-white border-t border-slate-200 relative">
+    <section id="dokumentasi" ref={sectionRef} className="py-20 bg-white border-t border-slate-100 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-12 space-y-3">
-          <h2 className="text-3xl sm:text-4xl font-bold text-brand-navy">
-            Galeri <span className="text-brand-gold">Foto & Visual KKN</span>
+        <div className="reveal text-center max-w-3xl mx-auto mb-12 space-y-3">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-xs font-bold text-brand-gold uppercase tracking-widest mb-3">
+            <Camera className="w-3.5 h-3.5" />
+            <span>Dokumentasi Kegiatan</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-navy">
+            Galeri <span className="text-gradient-gold">Foto & Visual KKN</span>
           </h2>
-          <p className="text-base text-slate-600">
+          <p className="text-base text-slate-500">
             Kumpulan momen dan kebersamaan tim KKN Kelompok 3 bersama masyarakat Desa Karangrejo.
           </p>
         </div>
@@ -59,12 +81,12 @@ export default function GallerySection({ galleryList }) {
         </div>
 
         {/* Gallery Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {filteredGallery.map((item, idx) => (
             <div
               key={item.id || idx}
               onClick={() => openLightbox(idx)}
-              className="group relative h-64 sm:h-72 rounded-3xl overflow-hidden bg-slate-100 border border-slate-200 cursor-pointer shadow-sm hover:shadow-xl transition-all hover:scale-[1.02]"
+              className="reveal group relative h-64 sm:h-72 rounded-2xl overflow-hidden bg-slate-100 border border-slate-100 cursor-pointer shadow-card hover:shadow-gold-lg transition-all duration-300 hover:scale-[1.02]"
             >
               <img
                 src={item.image}

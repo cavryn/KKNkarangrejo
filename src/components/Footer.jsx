@@ -1,5 +1,5 @@
 'use client';
-import { Heart, ArrowUp } from 'lucide-react';
+import { Heart, ArrowUp, ExternalLink } from 'lucide-react';
 
 export default function Footer({ villageInfo }) {
   const scrollToTop = () => {
@@ -7,14 +7,23 @@ export default function Footer({ villageInfo }) {
   };
 
   return (
-    <footer className="bg-brand-navy text-white py-12 relative border-t-4 border-brand-gold">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <footer className="relative bg-gradient-to-b from-brand-navy to-[#071B30] text-white py-14 overflow-hidden">
+      {/* Subtle dot pattern */}
+      <div className="absolute inset-0 opacity-[0.03]" style={{
+        backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.8) 1px, transparent 1px)',
+        backgroundSize: '20px 20px'
+      }} />
+
+      {/* Top gold accent line */}
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-brand-gold to-transparent" />
+
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6 pb-8 border-b border-slate-700/80">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-8 pb-8 border-b border-white/10">
           
           {/* Left Brand with Logo */}
-          <div className="flex items-center gap-4">
-            <div className="p-2 rounded-xl bg-white/10 backdrop-blur-md border border-white/20">
+          <div className="flex items-center gap-4 group">
+            <div className="p-2.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/10 group-hover:border-brand-gold/40 transition-colors">
               <img 
                 src="/logo/KKNteks.png" 
                 alt="Logo KKN Karangrejo" 
@@ -23,38 +32,47 @@ export default function Footer({ villageInfo }) {
               />
             </div>
             <div>
-              <h4 className="text-base font-bold text-white">KKN Kelompok 3 — Desa Karangrejo</h4>
-              <p className="text-xs text-amber-200/80 font-medium">Kecamatan Ujungpangkah, Kabupaten Gresik</p>
+              <h4 className="text-sm font-bold text-white">KKN Kelompok 3 — Desa Karangrejo</h4>
+              <p className="text-xs text-amber-200/60 font-medium">Kecamatan Ujungpangkah, Kabupaten Gresik</p>
             </div>
           </div>
 
           {/* Quick Links */}
-          <div className="flex flex-wrap items-center gap-6 text-xs text-slate-300 font-semibold">
-            <a href="#beranda" className="hover:text-brand-gold transition-colors">Beranda</a>
-            <a href="#tentang" className="hover:text-brand-gold transition-colors">Tentang Kami</a>
-            <a href="#proker" className="hover:text-brand-gold transition-colors">Program Kerja</a>
-            <a href="#dokumentasi" className="hover:text-brand-gold transition-colors">Dokumentasi</a>
-            <a href="#artikel" className="hover:text-brand-gold transition-colors">Modul Artikel</a>
-            <a href="#kontak" className="hover:text-brand-gold transition-colors">Kontak</a>
+          <div className="flex flex-wrap items-center gap-6 text-xs font-semibold">
+            {[
+              { name: 'Beranda', href: '#beranda' },
+              { name: 'Tentang Kami', href: '#tentang' },
+              { name: 'Program Kerja', href: '#proker' },
+              { name: 'Dokumentasi', href: '#dokumentasi' },
+              { name: 'Modul Artikel', href: '#artikel' },
+              { name: 'Kontak', href: '#kontak' },
+            ].map(link => (
+              <a
+                key={link.name}
+                href={link.href}
+                className="text-slate-400 hover:text-brand-gold transition-colors duration-200"
+              >
+                {link.name}
+              </a>
+            ))}
           </div>
 
           {/* Scroll to Top */}
           <button
             onClick={scrollToTop}
-            className="p-3 rounded-full bg-white/10 hover:bg-brand-gold text-white transition-all border border-white/20 shadow-md"
+            className="p-3 rounded-full bg-white/5 hover:bg-brand-gold text-white/80 hover:text-white transition-all duration-300 border border-white/10 hover:border-brand-gold hover:shadow-gold hover:scale-110"
             title="Kembali ke Atas"
           >
             <ArrowUp className="w-4 h-4" />
           </button>
-
         </div>
 
         {/* Bottom Credits */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400 font-medium">
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 font-medium">
           <p>© 2026 KKN Kelompok 3 {villageInfo.name}. All Rights Reserved.</p>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             <span>Dibuat dengan</span>
-            <Heart className="w-3.5 h-3.5 text-amber-400 fill-amber-400 inline" />
+            <Heart className="w-3.5 h-3.5 text-amber-400 fill-amber-400 animate-pulse" />
             <span>untuk Desa Karangrejo, Ujungpangkah, Kabupaten Gresik</span>
           </div>
         </div>
@@ -63,3 +81,4 @@ export default function Footer({ villageInfo }) {
     </footer>
   );
 }
+

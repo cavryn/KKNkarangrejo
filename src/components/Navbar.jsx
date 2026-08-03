@@ -2,97 +2,140 @@
 import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 
+const navLinks = [
+  { name: 'Beranda', href: '#beranda', id: 'beranda' },
+  { name: 'Tentang Kami', href: '#tentang', id: 'tentang' },
+  { name: 'Program Kerja', href: '#proker', id: 'proker' },
+  { name: 'Dokumentasi', href: '#dokumentasi', id: 'dokumentasi' },
+  { name: 'Modul & Artikel', href: '#artikel', id: 'artikel' },
+  { name: 'Kontak', href: '#kontak', id: 'kontak' },
+];
+
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState('beranda');
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener('scroll', handleScroll);
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navLinks = [
-    { name: 'Beranda', href: '#beranda' },
-    { name: 'Tentang Kami', href: '#tentang' },
-    { name: 'Program Kerja', href: '#proker' },
-    { name: 'Dokumentasi', href: '#dokumentasi' },
-    { name: 'Modul & Artikel', href: '#artikel' },
-    { name: 'Kontak', href: '#kontak' },
-  ];
+  // Active section via IntersectionObserver
+  useEffect(() => {
+    const sectionIds = navLinks.map(l => l.id);
+    const observers = [];
+
+    sectionIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const obs = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) setActiveSection(id);
+        },
+        { rootMargin: '-40% 0px -55% 0px', threshold: 0 }
+      );
+      obs.observe(el);
+      observers.push(obs);
+    });
+
+    return () => observers.forEach(o => o.disconnect());
+  }, []);
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      isScrolled 
-        ? 'bg-white/95 backdrop-blur-md border-b border-slate-200 py-3 shadow-md' 
-        : 'bg-white/80 backdrop-blur-sm py-4 border-b border-slate-100'
-    }`}>
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-400 ${
+        isScrolled
+          ? 'bg-white/95 backdrop-blur-xl border-b border-slate-200/80 py-2.5 shadow-navy'
+          : 'bg-white/80 backdrop-blur-md py-4 border-b border-transparent'
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between">
-          
-          {/* Logo with official KKN logo graphic */}
-          <a href="#beranda" className="flex items-center gap-3 group">
-            <div className="h-10 sm:h-11 flex items-center justify-center">
-              <img 
-                src="/logo/KKNteks.png" 
-                alt="Logo KKN Karangrejo" 
-                className="h-10 sm:h-11 w-auto object-contain group-hover:scale-105 transition-transform"
-                onError={(e) => {
-                  e.target.src = '/logo/logoonlyKKN.png';
-                }}
+        <div className="flex items-center justify-between gap-4">
+
+          {/* Logo */}
+          <a href="#beranda" className="flex items-center gap-3 group flex-shrink-0">
+            <div className="h-10 sm:h-11 flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
+              <img
+                src="/logo/KKNteks.png"
+                alt="Logo KKN Karangrejo"
+                className="h-10 sm:h-11 w-auto object-contain"
+                onError={(e) => { e.target.src = '/logo/logoonlyKKN.png'; }}
               />
             </div>
-            <div className="hidden sm:block border-l border-slate-300 pl-3">
-              <div className="text-xs font-bold text-brand-navy tracking-tight uppercase">
+            <div className="hidden sm:block border-l border-slate-200 pl-3">
+              <div className="text-xs font-extrabold text-brand-navy tracking-tight uppercase leading-tight">
                 Kelompok 3 • Karangrejo
               </div>
-              <p className="text-[11px] text-slate-500 font-medium">Ujungpangkah, Kab. Gresik</p>
+              <p className="text-[10px] text-slate-400 font-semibold tracking-wide">Ujungpangkah, Kab. Gresik</p>
             </div>
           </a>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center space-x-1 lg:space-x-2 bg-slate-100/80 px-4 py-1.5 rounded-full border border-slate-200/80">
-            {navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                className="px-3.5 py-1.5 text-sm font-semibold text-brand-navy hover:text-brand-gold hover:bg-white rounded-full transition-all"
-              >
-                {link.name}
-              </a>
-            ))}
+          {/* Desktop Nav */}
+          <nav className="hidden md:flex items-center gap-1 bg-slate-100/70 px-3 py-1.5 rounded-full border border-slate-200/80">
+            {navLinks.map((link) => {
+              const isActive = activeSection === link.id;
+              return (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  className={`relative px-3.5 py-1.5 text-sm font-semibold rounded-full transition-all duration-200 ${
+                    isActive
+                      ? 'bg-brand-gold text-white shadow-gold'
+                      : 'text-brand-navy hover:text-brand-gold hover:bg-white'
+                  }`}
+                >
+                  {link.name}
+                </a>
+              );
+            })}
           </nav>
 
-          {/* Mobile Menu Toggle Button */}
-          <div className="md:hidden flex items-center gap-2">
+          {/* Mobile Toggle */}
+          <div className="md:hidden">
             <button
+              id="mobile-menu-toggle"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-xl text-brand-navy hover:bg-slate-100 border border-slate-200"
+              className="p-2 rounded-xl text-brand-navy hover:bg-slate-100 border border-slate-200 transition-colors"
+              aria-label={mobileMenuOpen ? 'Tutup menu' : 'Buka menu'}
             >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {mobileMenuOpen
+                ? <X className="w-5 h-5" />
+                : <Menu className="w-5 h-5" />
+              }
             </button>
           </div>
-
         </div>
       </div>
 
-      {/* Mobile Drawer Menu */}
+      {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-white/95 backdrop-blur-xl border-b border-slate-200 px-4 pt-3 pb-6 mt-3 space-y-2 shadow-lg">
-          {navLinks.map((link) => (
-            <a
-              key={link.name}
-              href={link.href}
-              onClick={() => setMobileMenuOpen(false)}
-              className="block px-4 py-2.5 text-base font-semibold text-brand-navy hover:text-brand-gold hover:bg-amber-50 rounded-xl transition-colors"
-            >
-              {link.name}
-            </a>
-          ))}
+        <div className="md:hidden animate-slide-down bg-white border-t border-slate-200 shadow-navy-lg">
+          <div className="max-w-7xl mx-auto px-4 py-4 space-y-1">
+            {navLinks.map((link, idx) => {
+              const isActive = activeSection === link.id;
+              return (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  style={{ animationDelay: `${idx * 50}ms` }}
+                  className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all animate-fade-in ${
+                    isActive
+                      ? 'bg-brand-gold/10 text-brand-gold border border-brand-gold/30'
+                      : 'text-brand-navy hover:bg-slate-50 hover:text-brand-gold'
+                  }`}
+                >
+                  {isActive && <span className="w-2 h-2 rounded-full bg-brand-gold flex-shrink-0" />}
+                  {link.name}
+                </a>
+              );
+            })}
+          </div>
         </div>
       )}
     </header>
   );
 }
+

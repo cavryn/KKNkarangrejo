@@ -1,12 +1,30 @@
 'use client';
-import { useState } from 'react';
-import { Phone, MapPin, Send, MessageSquare, CheckCircle2, Instagram } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Phone, MapPin, Send, MessageSquare, CheckCircle2, Instagram, Mail } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '@/lib/supabaseClient';
 
 export default function ContactSection({ villageInfo }) {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedSuccess, setSubmittedSuccess] = useState(false);
+  const sectionRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const reveals = entry.target.querySelectorAll('.reveal');
+            reveals.forEach((el, i) => setTimeout(() => el.classList.add('visible'), i * 80));
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+    if (sectionRef.current) observer.observe(sectionRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -32,15 +50,19 @@ export default function ContactSection({ villageInfo }) {
   };
 
   return (
-    <section id="kontak" className="py-20 bg-white border-t border-slate-200 relative">
+    <section id="kontak" ref={sectionRef} className="py-20 bg-white border-t border-slate-100 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-          <h2 className="text-3xl sm:text-4xl font-bold text-brand-navy">
-            Hubungi <span className="text-brand-gold">Tim KKN Kelompok 3</span>
+        <div className="reveal text-center max-w-3xl mx-auto mb-16 space-y-3">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-xs font-bold text-brand-gold uppercase tracking-widest mb-3">
+            <Mail className="w-3.5 h-3.5" />
+            <span>Hubungi Kami</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-navy">
+            Hubungi <span className="text-gradient-gold">Tim KKN Kelompok 3</span>
           </h2>
-          <p className="text-base text-slate-600">
+          <p className="text-base text-slate-500">
             Punya pertanyaan, masukan, atau saran untuk pengabdian KKN? Kirimkan pesan Anda langsung kepada kami.
           </p>
         </div>
@@ -48,7 +70,7 @@ export default function ContactSection({ villageInfo }) {
         <div className="grid md:grid-cols-2 gap-10">
           
           {/* Info Card */}
-          <div className="p-8 rounded-3xl bg-slate-50 border border-slate-200 space-y-8 flex flex-col justify-between shadow-sm">
+          <div className="reveal p-8 rounded-3xl bg-gradient-to-br from-slate-50 to-amber-50/30 border border-slate-200 space-y-8 flex flex-col justify-between shadow-card hover:shadow-gold transition-all duration-300">
             <div className="space-y-6">
               <h3 className="text-2xl font-bold text-brand-navy">Posko Informasi KKN</h3>
               <p className="text-sm text-slate-600 leading-relaxed">
@@ -100,7 +122,7 @@ export default function ContactSection({ villageInfo }) {
               href="https://wa.me/6281234567890?text=Halo%20Tim%20KKN%20Kelompok%203"
               target="_blank"
               rel="noreferrer"
-              className="w-full py-3.5 px-6 rounded-2xl bg-brand-green hover:bg-brand-greenHover text-white font-bold flex items-center justify-center gap-2 shadow-md shadow-brand-green/20 transition-all"
+              className="btn-shimmer w-full py-3.5 px-6 rounded-2xl bg-brand-green hover:bg-brand-greenHover text-white font-bold flex items-center justify-center gap-2 shadow-md shadow-brand-green/20 transition-all duration-300 hover:scale-[1.02]"
             >
               <MessageSquare className="w-5 h-5" />
               <span>Chat Langsung via WhatsApp</span>
@@ -109,7 +131,7 @@ export default function ContactSection({ villageInfo }) {
           </div>
 
           {/* Contact Form */}
-          <div className="p-8 rounded-3xl bg-slate-50 border border-slate-200 shadow-sm">
+          <div className="reveal reveal-delay-1 p-8 rounded-3xl bg-white border border-slate-200 shadow-card hover:shadow-navy transition-all duration-300">
             <h3 className="text-2xl font-bold text-brand-navy mb-6">Formulir Pesan & Saran</h3>
 
             {submittedSuccess && (
@@ -130,7 +152,7 @@ export default function ContactSection({ villageInfo }) {
                   placeholder="Masukkan nama Anda"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full bg-white border border-slate-300 text-brand-navy text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-brand-gold shadow-sm transition-colors"
+                  className="w-full bg-white border border-slate-200 text-brand-navy text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/20 shadow-card transition-all"
                 />
               </div>
 
@@ -143,7 +165,7 @@ export default function ContactSection({ villageInfo }) {
                   placeholder="contoh: email@domain.com atau 0812..."
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full bg-white border border-slate-300 text-brand-navy text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-brand-gold shadow-sm transition-colors"
+                  className="w-full bg-white border border-slate-200 text-brand-navy text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/20 shadow-card transition-all"
                 />
               </div>
 
@@ -157,14 +179,14 @@ export default function ContactSection({ villageInfo }) {
                   placeholder="Tuliskan pesan, tanggapan proker, atau masukan untuk kelompok 3..."
                   value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  className="w-full bg-white border border-slate-300 text-brand-navy text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-brand-gold shadow-sm transition-colors"
+                  className="w-full bg-white border border-slate-200 text-brand-navy text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/20 shadow-card transition-all"
                 ></textarea>
               </div>
 
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-brand-gold to-amber-600 hover:from-amber-600 hover:to-brand-gold text-white font-bold shadow-md shadow-brand-gold/20 flex items-center justify-center gap-2 transition-all"
+                className="btn-shimmer w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-brand-gold to-amber-500 hover:from-amber-500 hover:to-brand-gold text-white font-bold shadow-gold hover:shadow-gold-lg flex items-center justify-center gap-2 transition-all duration-300 hover:scale-[1.02]"
               >
                 <Send className="w-4 h-4" />
                 <span>{isSubmitting ? 'Mengirim Pesan...' : 'Kirim Pesan Sekarang'}</span>
