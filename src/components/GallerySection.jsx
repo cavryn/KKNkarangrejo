@@ -7,11 +7,14 @@ export default function GallerySection({ galleryList }) {
   const [lightboxIndex, setLightboxIndex] = useState(null);
   const sectionRef = useRef(null);
 
+  const PLACEHOLDER_IMG = 'https://images.unsplash.com/photo-1588345921523-c2dcdb7f1dcd?auto=format&fit=crop&w=800&q=80';
+
   const categories = ['Semua', 'Lingkungan', 'Ekonomi & UMKM', 'Kesehatan', 'Pendidikan', 'Teknologi'];
 
-  const filteredGallery = galleryList.filter(item => 
-    activeCategory === 'Semua' || item.prokerCategory === activeCategory
-  );
+  const filteredGallery = galleryList.filter(item => {
+    const category = item.prokerCategory || item.prokercategory;
+    return activeCategory === 'Semua' || category === activeCategory;
+  });
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -89,9 +92,10 @@ export default function GallerySection({ galleryList }) {
               className="reveal group relative h-64 sm:h-72 rounded-2xl overflow-hidden bg-slate-100 border border-slate-100 cursor-pointer shadow-card hover:shadow-gold-lg transition-all duration-300 hover:scale-[1.02]"
             >
               <img
-                src={item.image}
+                src={item.image || PLACEHOLDER_IMG}
                 alt={item.title}
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                onError={(e) => { e.target.src = PLACEHOLDER_IMG; }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/90 via-brand-navy/30 to-transparent opacity-80 group-hover:opacity-90 transition-opacity"></div>
               
@@ -101,7 +105,7 @@ export default function GallerySection({ galleryList }) {
 
               <div className="absolute bottom-4 left-4 right-4 space-y-1">
                 <span className="inline-block px-2.5 py-0.5 text-[10px] font-bold rounded-md bg-brand-gold text-white shadow-sm">
-                  {item.prokerCategory}
+                  {item.prokerCategory || item.prokercategory}
                 </span>
                 <h3 className="text-base font-bold text-white group-hover:text-amber-200 transition-colors line-clamp-1">
                   {item.title}
@@ -146,15 +150,16 @@ export default function GallerySection({ galleryList }) {
           <div className="max-w-4xl w-full max-h-[85vh] flex flex-col items-center justify-center space-y-4">
             <div className="relative max-h-[70vh] rounded-2xl overflow-hidden border border-slate-200 shadow-2xl bg-black">
               <img
-                src={filteredGallery[lightboxIndex].image}
+                src={filteredGallery[lightboxIndex].image || PLACEHOLDER_IMG}
                 alt={filteredGallery[lightboxIndex].title}
                 className="max-h-[70vh] w-auto object-contain mx-auto"
+                onError={(e) => { e.target.src = PLACEHOLDER_IMG; }}
               />
             </div>
 
             <div className="text-center space-y-1 bg-white px-6 py-4 rounded-2xl border border-slate-200 shadow-lg max-w-xl">
               <span className="text-xs font-bold text-brand-gold uppercase tracking-wider">
-                {filteredGallery[lightboxIndex].prokerCategory} ({lightboxIndex + 1} / {filteredGallery.length})
+                {filteredGallery[lightboxIndex].prokerCategory || filteredGallery[lightboxIndex].prokercategory} ({lightboxIndex + 1} / {filteredGallery.length})
               </span>
               <h3 className="text-lg font-bold text-brand-navy">
                 {filteredGallery[lightboxIndex].title}

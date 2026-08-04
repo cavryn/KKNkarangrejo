@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import HeroSection from '@/components/HeroSection';
 import AboutSection from '@/components/AboutSection';
@@ -10,13 +10,34 @@ import ContactSection from '@/components/ContactSection';
 import Footer from '@/components/Footer';
 
 import { INITIAL_DATA } from '@/data/initialData';
+import { supabase, isSupabaseConfigured } from '@/lib/supabaseClient';
 
 export default function Home() {
   const [villageInfo] = useState(INITIAL_DATA.villageInfo);
-  const [prokerList] = useState(INITIAL_DATA.prokerList);
-  const [galleryList] = useState(INITIAL_DATA.galleryList);
-  const [articlesList] = useState(INITIAL_DATA.articlesList);
+  const [prokerList, setProkerList] = useState(INITIAL_DATA.prokerList);
+  const [galleryList, setGalleryList] = useState(INITIAL_DATA.galleryList);
+  const [articlesList, setArticlesList] = useState(INITIAL_DATA.articlesList);
   const [teamMembers] = useState(INITIAL_DATA.teamMembers);
+
+  // Fetch Live Data from Supabase if Configured
+  useEffect(() => {
+    async function loadSupabaseData() {
+      if (!isSupabaseConfigured || !supabase) return;
+      try {
+        const { data: prokerData } = await supabase.from('proker').select('*').order('created_at', { ascending: false });
+        if (prokerData && prokerData.length > 0) setProkerList(prokerData);
+
+        const { data: galleryData } = await supabase.from('gallery').select('*').order('created_at', { ascending: false });
+        if (galleryData && galleryData.length > 0) setGalleryList(galleryData);
+
+        const { data: articlesData } = await supabase.from('articles').select('*').order('created_at', { ascending: false });
+        if (articlesData && articlesData.length > 0) setArticlesList(articlesData);
+      } catch (err) {
+        console.warn("Sinkronisasi Supabase di Homepage menggunakan fallback data lokal:", err);
+      }
+    }
+    loadSupabaseData();
+  }, []);
 
   return (
     <main className="min-h-screen bg-slate-50 text-brand-navy relative overflow-hidden">

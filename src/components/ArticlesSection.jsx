@@ -6,6 +6,8 @@ export default function ArticlesSection({ articlesList }) {
   const [activeArticleModal, setActiveArticleModal] = useState(null);
   const sectionRef = useRef(null);
 
+  const PLACEHOLDER_IMG = 'https://images.unsplash.com/photo-1588345921523-c2dcdb7f1dcd?auto=format&fit=crop&w=800&q=80';
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -52,9 +54,10 @@ export default function ArticlesSection({ articlesList }) {
               <div className="space-y-4">
                 <div className="relative h-52 rounded-2xl overflow-hidden bg-slate-100">
                   <img
-                    src={article.coverImage}
+                    src={article.coverImage || article.coverimage || PLACEHOLDER_IMG}
                     alt={article.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    onError={(e) => { e.target.src = PLACEHOLDER_IMG; }}
                   />
                   <div className="absolute top-3 left-3">
                     <span className="px-3 py-1 text-xs font-bold rounded-lg bg-white/90 text-brand-navy border border-slate-200 backdrop-blur-md shadow-sm">
@@ -108,9 +111,10 @@ export default function ArticlesSection({ articlesList }) {
             {/* Modal Image Header */}
             <div className="relative h-64 sm:h-72 w-full">
               <img
-                src={activeArticleModal.coverImage}
+                src={activeArticleModal.coverImage || activeArticleModal.coverimage || PLACEHOLDER_IMG}
                 alt={activeArticleModal.title}
                 className="w-full h-full object-cover"
+                onError={(e) => { e.target.src = PLACEHOLDER_IMG; }}
               />
               <button
                 onClick={() => setActiveArticleModal(null)}

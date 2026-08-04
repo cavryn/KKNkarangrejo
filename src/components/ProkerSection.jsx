@@ -8,6 +8,8 @@ export default function ProkerSection({ prokerList }) {
   const [activeModalProker, setActiveModalProker] = useState(null);
   const sectionRef = useRef(null);
 
+  const PLACEHOLDER_IMG = 'https://images.unsplash.com/photo-1588345921523-c2dcdb7f1dcd?auto=format&fit=crop&w=800&q=80';
+
   const categories = ['Semua', 'Ekonomi & UMKM', 'Lingkungan', 'Pendidikan', 'Kesehatan', 'Teknologi'];
 
   const filteredProker = prokerList.filter(item => {
@@ -104,9 +106,10 @@ export default function ProkerSection({ prokerList }) {
                   {/* Image & Status Badge */}
                   <div className="relative h-48 w-full overflow-hidden bg-slate-100">
                     <img
-                      src={proker.image}
+                      src={proker.image || PLACEHOLDER_IMG}
                       alt={proker.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      onError={(e) => { e.target.src = PLACEHOLDER_IMG; }}
                     />
                     <div className="absolute top-3 right-3 flex items-center gap-2">
                       <span className={`px-3 py-1 text-xs font-bold rounded-full backdrop-blur-md border ${
@@ -176,9 +179,10 @@ export default function ProkerSection({ prokerList }) {
             {/* Modal Image Header */}
             <div className="relative h-64 w-full">
               <img
-                src={activeModalProker.image}
+                src={activeModalProker.image || PLACEHOLDER_IMG}
                 alt={activeModalProker.title}
                 className="w-full h-full object-cover"
+                onError={(e) => { e.target.src = PLACEHOLDER_IMG; }}
               />
               <button
                 onClick={() => setActiveModalProker(null)}
