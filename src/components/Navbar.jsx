@@ -45,11 +45,10 @@ export default function Navbar() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-400 ${
-        isScrolled
-          ? 'bg-white/95 backdrop-blur-xl border-b border-slate-200/80 py-2.5 shadow-navy'
-          : 'bg-white/80 backdrop-blur-md py-4 border-b border-transparent'
-      }`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-400 ${isScrolled
+        ? 'bg-white/95 backdrop-blur-xl border-b border-slate-200/80 py-2.5 shadow-navy'
+        : 'bg-white/80 backdrop-blur-md py-4 border-b border-transparent'
+        }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-4">
@@ -80,11 +79,10 @@ export default function Navbar() {
                 <a
                   key={link.name}
                   href={link.href}
-                  className={`relative px-3.5 py-1.5 text-sm font-semibold rounded-full transition-all duration-200 ${
-                    isActive
-                      ? 'bg-brand-gold text-white shadow-gold'
-                      : 'text-brand-navy hover:text-brand-gold hover:bg-white'
-                  }`}
+                  className={`relative px-3.5 py-1.5 text-sm font-semibold rounded-full transition-all duration-200 ${isActive
+                    ? 'bg-brand-gold text-white shadow-gold'
+                    : 'text-brand-navy hover:text-brand-gold hover:bg-white'
+                    }`}
                 >
                   {link.name}
                 </a>
@@ -121,11 +119,10 @@ export default function Navbar() {
                   href={link.href}
                   onClick={() => setMobileMenuOpen(false)}
                   style={{ animationDelay: `${idx * 50}ms` }}
-                  className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all animate-fade-in ${
-                    isActive
-                      ? 'bg-brand-gold/10 text-brand-gold border border-brand-gold/30'
-                      : 'text-brand-navy hover:bg-slate-50 hover:text-brand-gold'
-                  }`}
+                  className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all animate-fade-in ${isActive
+                    ? 'bg-brand-gold/10 text-brand-gold border border-brand-gold/30'
+                    : 'text-brand-navy hover:bg-slate-50 hover:text-brand-gold'
+                    }`}
                 >
                   {isActive && <span className="w-2 h-2 rounded-full bg-brand-gold flex-shrink-0" />}
                   {link.name}
