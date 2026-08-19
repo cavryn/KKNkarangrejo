@@ -1,9 +1,13 @@
 'use client';
-import { useEffect, useRef } from 'react';
-import { MapPin, Award, GraduationCap, Users } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { MapPin, Award, GraduationCap, Users, ArrowRight } from 'lucide-react';
 
 export default function AboutSection({ villageInfo, teamMembers }) {
   const sectionRef = useRef(null);
+  const [mapVisible, setMapVisible] = useState(false);
+  const mapContainerRef = useRef(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -22,6 +26,21 @@ export default function AboutSection({ villageInfo, teamMembers }) {
     );
     if (sectionRef.current) observer.observe(sectionRef.current);
     return () => observer.disconnect();
+  }, []);
+
+  // Lazy load Google Maps iframe only when map container is visible
+  useEffect(() => {
+    const mapObs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setMapVisible(true);
+          mapObs.disconnect();
+        }
+      },
+      { rootMargin: '200px' }
+    );
+    if (mapContainerRef.current) mapObs.observe(mapContainerRef.current);
+    return () => mapObs.disconnect();
   }, []);
 
   return (
@@ -70,21 +89,30 @@ export default function AboutSection({ villageInfo, teamMembers }) {
             <div className="p-4 rounded-2xl bg-white border border-slate-200 flex items-center justify-between shadow-sm">
               <div>
                 <span className="text-xs text-slate-500 font-medium block">Slogan Desa</span>
-                <span className="text-sm font-bold text-brand-navy">"{villageInfo.motto}"</span>
+                <span className="text-sm font-bold text-brand-navy">&quot;{villageInfo.motto}&quot;</span>
               </div>
               <Award className="w-6 h-6 text-brand-gold" />
             </div>
           </div>
 
-          {/* Card Peta Desa & Lokasi */}
+          {/* Card Peta Desa & Lokasi — lazy loaded Google Maps */}
           <div className="reveal reveal-delay-1 rounded-3xl bg-slate-50 border border-slate-200 p-2 overflow-hidden flex flex-col justify-between shadow-card">
-            <div className="relative w-full h-64 sm:h-72 rounded-2xl overflow-hidden border border-slate-200">
-              <iframe
-                title="Peta Desa Karangrejo Ujungpangkah Gresik"
-                src="https://maps.google.com/maps?q=Karangrejo,+Ujungpangkah,+Gresik,+Jawa+Timur&t=&z=14&ie=UTF8&iwloc=&output=embed"
-                className="w-full h-full border-0 filter opacity-90 hover:opacity-100 transition-opacity"
-                loading="lazy"
-              ></iframe>
+            <div ref={mapContainerRef} className="relative w-full h-64 sm:h-72 rounded-2xl overflow-hidden border border-slate-200">
+              {mapVisible ? (
+                <iframe
+                  title="Peta Desa Karangrejo Ujungpangkah Gresik"
+                  src="https://maps.google.com/maps?q=Karangrejo,+Ujungpangkah,+Gresik,+Jawa+Timur&t=&z=14&ie=UTF8&iwloc=&output=embed"
+                  className="w-full h-full border-0 filter opacity-90 hover:opacity-100 transition-opacity"
+                  loading="lazy"
+                ></iframe>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-slate-100 text-slate-400">
+                  <div className="text-center space-y-2">
+                    <MapPin className="w-8 h-8 mx-auto text-slate-300" />
+                    <p className="text-sm font-medium">Memuat peta...</p>
+                  </div>
+                </div>
+              )}
             </div>
             <div className="p-4 flex items-center justify-between bg-white rounded-xl mt-2 border border-slate-200">
               <div className="flex items-center gap-2">
@@ -120,10 +148,12 @@ export default function AboutSection({ villageInfo, teamMembers }) {
               >
                 <div className="flex items-center gap-4 mb-4">
                   <div className="relative w-14 h-14 rounded-full overflow-hidden ring-2 ring-offset-2 ring-brand-gold/30 group-hover:ring-brand-gold transition-all duration-300">
-                    <img 
+                    <Image 
                       src={member.photo} 
-                      alt={member.name} 
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                      alt={member.name}
+                      fill
+                      sizes="56px"
+                      className="object-cover group-hover:scale-110 transition-transform duration-300"
                     />
                   </div>
                   <div>
@@ -140,11 +170,22 @@ export default function AboutSection({ villageInfo, teamMembers }) {
 
                 {member.quote && (
                   <p className="text-xs text-slate-600 italic bg-white p-3 rounded-xl border border-slate-200">
-                    "{member.quote}"
+                    &quot;{member.quote}&quot;
                   </p>
                 )}
               </div>
             ))}
+          </div>
+
+          {/* CTA Button to Full 17 Members Page */}
+          <div className="reveal text-center mt-10">
+            <Link
+              href="/anggota"
+              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-gradient-to-r from-brand-gold to-amber-500 hover:from-amber-500 hover:to-brand-gold text-white font-extrabold text-sm shadow-gold hover:shadow-gold-lg hover:scale-[1.03] transition-all duration-300 btn-shimmer"
+            >
+              <span>Lihat Seluruh 17 Anggota Tim KKN</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
         </div>
 

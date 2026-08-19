@@ -1,4 +1,22 @@
+import { Plus_Jakarta_Sans, Inter } from 'next/font/google';
 import './globals.css';
+
+// Self-hosted & subsetted Google Fonts — eliminates render-blocking external requests
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700', '800'],
+  variable: '--font-sans',
+  display: 'swap',
+  preload: true,
+});
+
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-body',
+  display: 'swap',
+  preload: true,
+});
 
 export const metadata = {
   title: 'KKN Kelompok 3 — Desa Karangrejo, Ujungpangkah | Profil & Dokumentasi Proker',
@@ -14,12 +32,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="id" className="scroll-smooth">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-      </head>
+    <html lang="id" className={`scroll-smooth ${plusJakartaSans.variable} ${inter.variable}`}>
       <body className="bg-slate-50 text-brand-navy antialiased min-h-screen selection:bg-brand-gold selection:text-white">
         {children}
       </body>

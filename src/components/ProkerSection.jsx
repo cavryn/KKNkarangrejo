@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import { CheckCircle, Clock, Calendar, Filter, Search, Eye, X, Target } from 'lucide-react';
 
 export default function ProkerSection({ prokerList }) {
@@ -105,11 +106,12 @@ export default function ProkerSection({ prokerList }) {
                 <div>
                   {/* Image & Status Badge */}
                   <div className="relative h-48 w-full overflow-hidden bg-slate-100">
-                    <img
+                    <Image
                       src={proker.image || PLACEHOLDER_IMG}
                       alt={proker.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      onError={(e) => { e.target.src = PLACEHOLDER_IMG; }}
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <div className="absolute top-3 right-3 flex items-center gap-2">
                       <span className={`px-3 py-1 text-xs font-bold rounded-full backdrop-blur-md border ${
@@ -178,11 +180,12 @@ export default function ProkerSection({ prokerList }) {
             
             {/* Modal Image Header */}
             <div className="relative h-64 w-full">
-              <img
+              <Image
                 src={activeModalProker.image || PLACEHOLDER_IMG}
                 alt={activeModalProker.title}
-                className="w-full h-full object-cover"
-                onError={(e) => { e.target.src = PLACEHOLDER_IMG; }}
+                fill
+                sizes="(max-width: 768px) 100vw, 672px"
+                className="object-cover"
               />
               <button
                 onClick={() => setActiveModalProker(null)}

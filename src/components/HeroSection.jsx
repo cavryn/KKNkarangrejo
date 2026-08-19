@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { ArrowRight, CheckCircle2, Clock, BookOpen, MapPin, Star } from 'lucide-react';
+import Image from 'next/image';
+import { ArrowRight, CheckCircle2, Clock, BookOpen, MapPin } from 'lucide-react';
 
 // Animated counter hook
 function useCountUp(target, duration = 1200, started = false) {
@@ -135,15 +136,7 @@ export default function HeroSection({ villageInfo }) {
               </a>
             </div>
 
-            {/* Trust indicators */}
-            <div className="reveal reveal-delay-4 flex items-center justify-center lg:justify-start gap-2 text-xs text-slate-400 font-medium">
-              <div className="flex -space-x-1.5">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-                ))}
-              </div>
-              <span>Program KKN Resmi Universitas · Tahun 2026</span>
-            </div>
+
           </div>
 
           {/* Right: Logo Identity Card */}
@@ -160,13 +153,15 @@ export default function HeroSection({ villageInfo }) {
                   </span>
                 </div>
 
-                {/* Logo */}
+                {/* Logo — using Next.js Image for optimized loading */}
                 <div className="p-6 rounded-2xl bg-gradient-to-br from-amber-50/80 to-blue-50/50 border border-slate-100 flex items-center justify-center min-h-[160px]">
-                  <img
+                  <Image
                     src="/logo/KKN.png"
                     alt="Logo Resmi KKN Kelompok 3 Desa Karangrejo"
+                    width={300}
+                    height={144}
                     className="max-h-36 w-auto object-contain drop-shadow-md"
-                    onError={(e) => { e.target.src = '/logo/KKNteks.png'; }}
+                    priority
                   />
                 </div>
 

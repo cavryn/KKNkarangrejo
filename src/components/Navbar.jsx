@@ -1,10 +1,13 @@
 'use client';
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
 import { Menu, X } from 'lucide-react';
 
 const navLinks = [
   { name: 'Beranda', href: '#beranda', id: 'beranda' },
   { name: 'Tentang Kami', href: '#tentang', id: 'tentang' },
+  { name: 'Tim Anggota', href: '/anggota', id: 'anggota', isRoute: true },
   { name: 'Program Kerja', href: '#proker', id: 'proker' },
   { name: 'Dokumentasi', href: '#dokumentasi', id: 'dokumentasi' },
   { name: 'Modul & Artikel', href: '#artikel', id: 'artikel' },
@@ -16,32 +19,56 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('beranda');
 
+  // Scroll detector for Navbar background styling
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Active section via IntersectionObserver
+  // Robust active section detection using scroll position check
   useEffect(() => {
-    const sectionIds = navLinks.map(l => l.id);
-    const observers = [];
+    const handleSectionScroll = () => {
+      const sectionIds = navLinks.map(l => l.id);
+      const scrollPosition = window.scrollY + 200;
 
-    sectionIds.forEach(id => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      const obs = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) setActiveSection(id);
-        },
-        { rootMargin: '-40% 0px -55% 0px', threshold: 0 }
-      );
-      obs.observe(el);
-      observers.push(obs);
-    });
+      for (let i = sectionIds.length - 1; i >= 0; i--) {
+        const id = sectionIds[i];
+        const el = document.getElementById(id);
+        if (el) {
+          const top = el.offsetTop;
+          if (scrollPosition >= top) {
+            setActiveSection(id);
+            break;
+          }
+        }
+      }
+    };
 
-    return () => observers.forEach(o => o.disconnect());
+    window.addEventListener('scroll', handleSectionScroll, { passive: true });
+    // Initial check
+    handleSectionScroll();
+
+    return () => window.removeEventListener('scroll', handleSectionScroll);
   }, []);
+
+  const handleNavClick = (e, id) => {
+    e.preventDefault();
+    setActiveSection(id);
+    setMobileMenuOpen(false);
+
+    const el = document.getElementById(id);
+    if (el) {
+      const navOffset = 80;
+      const elementPosition = el.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - navOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   return (
     <header
@@ -53,14 +80,16 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-4">
 
-          {/* Logo */}
-          <a href="#beranda" className="flex items-center gap-3 group flex-shrink-0">
+          {/* Logo — using Next.js Image for optimization */}
+          <a href="#beranda" onClick={(e) => handleNavClick(e, 'beranda')} className="flex items-center gap-3 group flex-shrink-0">
             <div className="h-10 sm:h-11 flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
-              <img
+              <Image
                 src="/logo/KKNteks.png"
                 alt="Logo KKN Karangrejo"
+                width={160}
+                height={44}
                 className="h-10 sm:h-11 w-auto object-contain"
-                onError={(e) => { e.target.src = '/logo/logoonlyKKN.png'; }}
+                priority
               />
             </div>
             <div className="hidden sm:block border-l border-slate-200 pl-3">
@@ -75,10 +104,22 @@ export default function Navbar() {
           <nav className="hidden md:flex items-center gap-1 bg-slate-100/70 px-3 py-1.5 rounded-full border border-slate-200/80">
             {navLinks.map((link) => {
               const isActive = activeSection === link.id;
+              if (link.isRoute) {
+                return (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    className="relative px-3.5 py-1.5 text-sm font-semibold rounded-full transition-all duration-200 text-brand-navy hover:text-brand-gold hover:bg-white"
+                  >
+                    {link.name}
+                  </Link>
+                );
+              }
               return (
                 <a
                   key={link.name}
                   href={link.href}
+                  onClick={(e) => handleNavClick(e, link.id)}
                   className={`relative px-3.5 py-1.5 text-sm font-semibold rounded-full transition-all duration-200 ${isActive
                     ? 'bg-brand-gold text-white shadow-gold'
                     : 'text-brand-navy hover:text-brand-gold hover:bg-white'
@@ -113,11 +154,24 @@ export default function Navbar() {
           <div className="max-w-7xl mx-auto px-4 py-4 space-y-1">
             {navLinks.map((link, idx) => {
               const isActive = activeSection === link.id;
+              if (link.isRoute) {
+                return (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    style={{ animationDelay: `${idx * 50}ms` }}
+                    className="flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all animate-fade-in text-brand-navy hover:bg-slate-50 hover:text-brand-gold"
+                  >
+                    {link.name}
+                  </Link>
+                );
+              }
               return (
                 <a
                   key={link.name}
                   href={link.href}
-                  onClick={() => setMobileMenuOpen(false)}
+                  onClick={(e) => handleNavClick(e, link.id)}
                   style={{ animationDelay: `${idx * 50}ms` }}
                   className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all animate-fade-in ${isActive
                     ? 'bg-brand-gold/10 text-brand-gold border border-brand-gold/30'
@@ -135,4 +189,3 @@ export default function Navbar() {
     </header>
   );
 }
-

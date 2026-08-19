@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import { Maximize2, X, ChevronLeft, ChevronRight, Camera } from 'lucide-react';
 
 export default function GallerySection({ galleryList }) {
@@ -91,11 +92,12 @@ export default function GallerySection({ galleryList }) {
               onClick={() => openLightbox(idx)}
               className="reveal group relative h-64 sm:h-72 rounded-2xl overflow-hidden bg-slate-100 border border-slate-100 cursor-pointer shadow-card hover:shadow-gold-lg transition-all duration-300 hover:scale-[1.02]"
             >
-              <img
+              <Image
                 src={item.image || PLACEHOLDER_IMG}
                 alt={item.title}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                onError={(e) => { e.target.src = PLACEHOLDER_IMG; }}
+                fill
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                className="object-cover group-hover:scale-110 transition-transform duration-500"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/90 via-brand-navy/30 to-transparent opacity-80 group-hover:opacity-90 transition-opacity"></div>
               
@@ -148,12 +150,14 @@ export default function GallerySection({ galleryList }) {
           </button>
 
           <div className="max-w-4xl w-full max-h-[85vh] flex flex-col items-center justify-center space-y-4">
-            <div className="relative max-h-[70vh] rounded-2xl overflow-hidden border border-slate-200 shadow-2xl bg-black">
-              <img
+            <div className="relative w-full max-h-[70vh] rounded-2xl overflow-hidden border border-slate-200 shadow-2xl bg-black" style={{ aspectRatio: '16/10' }}>
+              <Image
                 src={filteredGallery[lightboxIndex].image || PLACEHOLDER_IMG}
                 alt={filteredGallery[lightboxIndex].title}
-                className="max-h-[70vh] w-auto object-contain mx-auto"
-                onError={(e) => { e.target.src = PLACEHOLDER_IMG; }}
+                fill
+                sizes="(max-width: 768px) 100vw, 896px"
+                className="object-contain"
+                priority
               />
             </div>
 

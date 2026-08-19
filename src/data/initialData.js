@@ -182,49 +182,188 @@ Di era digital, calon pembeli atau wisatawan mencari rekomendasi oleh-oleh langs
       id: "tm-1",
       name: "Rizky Ramadhan",
       role: "Ketua Kelompok KKN",
+      division: "Badan Pengurus Harian",
       major: "Teknik Informatika",
       photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
-      quote: "Memimpin dengan aksi, mengabdi untuk kemajuan Desa Karangrejo, Ujungpangkah, Kabupaten Gresik."
+      quote: "Memimpin dengan aksi, mengabdi untuk kemajuan Desa Karangrejo, Ujungpangkah, Kabupaten Gresik.",
+      instagram: "@rizky.ramadhan",
+      email: "rizky.ramadhan@kknkarangrejo.id"
     },
     {
       id: "tm-2",
       name: "Nabila Putri",
-      role: "Sekretaris & Divisi Humas",
+      role: "Sekretaris Utama",
+      division: "Badan Pengurus Harian",
       major: "Ilmu Komunikasi",
       photo: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80",
-      quote: "Menjalin silaturahmi hangat dan keterbukaan informasi bersama warga."
+      quote: "Menjalin silaturahmi hangat dan keterbukaan informasi publik bersama warga desa.",
+      instagram: "@nabilaputri.id",
+      email: "nabila.putri@kknkarangrejo.id"
     },
     {
       id: "tm-3",
       name: "Fajar Pratama",
-      role: "Bendahara & Penanggung Jawab UMKM",
+      role: "Bendahara Utama",
+      division: "Badan Pengurus Harian",
       major: "Manajemen Ekonomi",
       photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
-      quote: "Mendorong kemandirian ekonomi desa lewat inovasi produk lokal."
+      quote: "Pengelolaan akuntabilitas keuangan pengabdian yang transparan dan efektif.",
+      instagram: "@fajarpratama.eco",
+      email: "fajar.pratama@kknkarangrejo.id"
     },
     {
       id: "tm-4",
       name: "Siti Aminah",
-      role: "Divisi Kesehatan & Stunting",
+      role: "Koordinator Divisi Kesehatan & Stunting",
+      division: "Kesehatan & Gizi",
       major: "Kesehatan Masyarakat",
       photo: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80",
-      quote: "Generasi sehat dan bebas stunting adalah investasi masa depan Karangrejo."
+      quote: "Generasi sehat dan bebas stunting adalah investasi masa depan Karangrejo.",
+      instagram: "@siti.aminah_health",
+      email: "siti.aminah@kknkarangrejo.id"
     },
     {
       id: "tm-5",
       name: "Dimas Anggara",
-      role: "Divisi Lingkungan & Infrastruktur",
+      role: "Koordinator Divisi Lingkungan",
+      division: "Lingkungan & Kebersihan",
       major: "Teknik Lingkungan",
       photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80",
-      quote: "Desa asri, hijau, dan tertata rapi untuk anak cucu kita kelak."
+      quote: "Desa asri, hijau, dan pemilahan sampah mandiri untuk anak cucu kita kelak.",
+      instagram: "@dimasanggara_env",
+      email: "dimas.anggara@kknkarangrejo.id"
     },
     {
       id: "tm-6",
       name: "Anisa Rahma",
-      role: "Divisi Pendidikan & Literasi",
+      role: "Koordinator Divisi Pendidikan & Literasi",
+      division: "Pendidikan & Kebudayaan",
       major: "Pendidikan Guru Sekolah Dasar",
       photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80",
-      quote: "Setiap anak Karangrejo berhak atas pendidikan yang menyenangkan."
+      quote: "Setiap anak Karangrejo berhak atas pembelajaran interaktif yang menyenangkan.",
+      instagram: "@anisa.rahma_edu",
+      email: "anisa.rahma@kknkarangrejo.id"
+    },
+    {
+      id: "tm-7",
+      name: "Ahmad Fauzi",
+      role: "Koordinator Divisi PDD & IT",
+      division: "PDD & Teknologi",
+      major: "Teknik Informatika",
+      photo: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80",
+      quote: "Digitalisasi informasi desa untuk transparansi dan aksesibilitas publik.",
+      instagram: "@ahmadfauzi_dev",
+      email: "ahmad.fauzi@kknkarangrejo.id"
+    },
+    {
+      id: "tm-8",
+      name: "Budi Santoso",
+      role: "Koordinator Divisi UMKM & Ekonomi",
+      division: "Ekonomi & UMKM",
+      major: "Agribisnis",
+      photo: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&q=80",
+      quote: "Restrukturisasi branding dan pemasaran digital UMKM pangan lokal.",
+      instagram: "@budi.santoso_agri",
+      email: "budi.santoso@kknkarangrejo.id"
+    },
+    {
+      id: "tm-9",
+      name: "Dewi Lestari",
+      role: "Anggota Divisi Humas & Dokumentasi",
+      division: "Humas & Publikasi",
+      major: "Ilmu Komunikasi",
+      photo: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=80",
+      quote: "Mengabadikan setiap momen penuh kehangatan dan kebersamaan warga.",
+      instagram: "@dewilestari_media",
+      email: "dewi.lestari@kknkarangrejo.id"
+    },
+    {
+      id: "tm-10",
+      name: "Eko Prasetyo",
+      role: "Anggota Divisi Lingkungan",
+      division: "Lingkungan & Kebersihan",
+      major: "Teknik Sipil",
+      photo: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=400&q=80",
+      quote: "Membangun fasilitas sanitasi dan tempat daur ulang komposter warga.",
+      instagram: "@eko.prasetyo_civil",
+      email: "eko.prasetyo@kknkarangrejo.id"
+    },
+    {
+      id: "tm-11",
+      name: "Fitri Handayani",
+      role: "Anggota Divisi Kesehatan & Gizi",
+      division: "Kesehatan & Gizi",
+      major: "Ilmu Gizi",
+      photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
+      quote: "Sosialisasi MP-ASI kaya nutrisi herbal lokal untuk balita Karangrejo.",
+      instagram: "@fitri.nutrition",
+      email: "fitri.handayani@kknkarangrejo.id"
+    },
+    {
+      id: "tm-12",
+      name: "Gilang Ramadhan",
+      role: "Anggota Divisi PDD & Design",
+      division: "PDD & Teknologi",
+      major: "Desain Komunikasi Visual",
+      photo: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=400&q=80",
+      quote: "Mendesain kemasan UMKM dan spanduk informasi desa yang estetik.",
+      instagram: "@gilang_design",
+      email: "gilang.ramadhan@kknkarangrejo.id"
+    },
+    {
+      id: "tm-13",
+      name: "Hany Septiani",
+      role: "Anggota Divisi Pendidikan",
+      division: "Pendidikan & Kebudayaan",
+      major: "Pendidikan Bahasa Inggris",
+      photo: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80",
+      quote: "Mengajar Fun English Club & pendampingan belajar sore di Posko.",
+      instagram: "@hany.septiani_english",
+      email: "hany.septiani@kknkarangrejo.id"
+    },
+    {
+      id: "tm-14",
+      name: "Indra Wijaya",
+      role: "Anggota Divisi PDD & Website",
+      division: "PDD & Teknologi",
+      major: "Sistem Informasi",
+      photo: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=400&q=80",
+      quote: "Pengembangan etalase web desa agar Karangrejo dikenal luas.",
+      instagram: "@indra.wijaya_is",
+      email: "indra.wijaya@kknkarangrejo.id"
+    },
+    {
+      id: "tm-15",
+      name: "Julia Kartika",
+      role: "Anggota Divisi Humas & Acara",
+      division: "Humas & Publikasi",
+      major: "Hubungan Internasional",
+      photo: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=400&q=80",
+      quote: "Penyelenggara lokakarya dan panggung pentas seni perpisahan desa.",
+      instagram: "@julia.kartika_ir",
+      email: "julia.kartika@kknkarangrejo.id"
+    },
+    {
+      id: "tm-16",
+      name: "Kevin Kurniawan",
+      role: "Anggota Divisi UMKM & Logistik",
+      division: "Ekonomi & UMKM",
+      major: "Administrasi Bisnis",
+      photo: "https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?auto=format&fit=crop&w=400&q=80",
+      quote: "Pendampingan legalitas NIB dan pendaftaran Google Maps UMKM.",
+      instagram: "@kevin.kurniawan_biz",
+      email: "kevin.kurniawan@kknkarangrejo.id"
+    },
+    {
+      id: "tm-17",
+      name: "Larasati Putri",
+      role: "Anggota Divisi Kesehatan & Konseling",
+      division: "Kesehatan & Gizi",
+      major: "Psikologi",
+      photo: "https://images.unsplash.com/photo-1548142813-c348350df52b?auto=format&fit=crop&w=400&q=80",
+      quote: "Edukasi kesehatan mental dan dampingan tumbuh kembang remaja desa.",
+      instagram: "@larasati.putri_psych",
+      email: "larasati.putri@kknkarangrejo.id"
     }
   ]
 };

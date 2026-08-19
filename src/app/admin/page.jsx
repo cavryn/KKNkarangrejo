@@ -26,10 +26,24 @@ export default function AdminPage() {
   const [galleryList, setGalleryList] = useState([]);
   const [articlesList, setArticlesList] = useState([]);
   const [contactsList, setContactsList] = useState([]);
+  const [teamList, setTeamList] = useState([]);
 
   // Edit Mode State
   const [editingProkerId, setEditingProkerId] = useState(null);
   const [editingGalleryId, setEditingGalleryId] = useState(null);
+  const [editingTeamId, setEditingTeamId] = useState(null);
+
+  // Form State Team Member
+  const [newTeam, setNewTeam] = useState({
+    name: '',
+    role: '',
+    division: 'Badan Pengurus Harian',
+    major: '',
+    photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+    quote: '',
+    instagram: '',
+    email: ''
+  });
 
   // Form State Proker
   const [newProker, setNewProker] = useState({
@@ -58,22 +72,19 @@ export default function AdminPage() {
     setTimeout(() => setToast(null), 3500);
   };
 
-  // Centralized data fetcher — used on mount and after every CRUD operation
+  // Centralized data fetcher — used on mount and after Supabase CRUD operations
   const fetchAllData = async () => {
     if (!isSupabaseConfigured || !supabase) {
-      // Fallback ke data lokal jika Supabase belum dikonfigurasi
-      setProkerList(INITIAL_DATA.prokerList);
-      setGalleryList(INITIAL_DATA.galleryList);
-      setArticlesList(INITIAL_DATA.articlesList);
       setIsLoadingData(false);
       return;
     }
     try {
-      const [prokerRes, galleryRes, articlesRes, contactsRes] = await Promise.all([
+      const [prokerRes, galleryRes, articlesRes, contactsRes, teamRes] = await Promise.all([
         supabase.from('proker').select('*').order('created_at', { ascending: false }),
         supabase.from('gallery').select('*').order('created_at', { ascending: false }),
         supabase.from('articles').select('*').order('created_at', { ascending: false }),
-        supabase.from('contacts').select('*').order('created_at', { ascending: false })
+        supabase.from('contacts').select('*').order('created_at', { ascending: false }),
+        supabase.from('team_members').select('*').order('created_at', { ascending: true })
       ]);
 
       if (prokerRes.error) throw prokerRes.error;
@@ -84,17 +95,51 @@ export default function AdminPage() {
       setGalleryList(galleryRes.data || []);
       setArticlesList(articlesRes.data || []);
       setContactsList(contactsRes?.data || []);
+      if (teamRes?.data && teamRes.data.length > 0) setTeamList(teamRes.data);
     } catch (err) {
       console.error('Gagal mengambil data dari Supabase:', err);
       showToast('error', 'Gagal mengambil data dari Supabase: ' + (err.message || err));
-      // Fallback ke data lokal
-      setProkerList(INITIAL_DATA.prokerList);
-      setGalleryList(INITIAL_DATA.galleryList);
-      setArticlesList(INITIAL_DATA.articlesList);
     } finally {
       setIsLoadingData(false);
     }
   };
+
+  // Set initial data on first load with localStorage sync
+  useEffect(() => {
+    try {
+      const localProker = localStorage.getItem('kkn_proker_list');
+      const localGallery = localStorage.getItem('kkn_gallery_list');
+      const localArticles = localStorage.getItem('kkn_articles_list');
+      const localTeam = localStorage.getItem('kkn_team_list');
+
+      setProkerList(localProker ? JSON.parse(localProker) : (INITIAL_DATA.prokerList || []));
+      setGalleryList(localGallery ? JSON.parse(localGallery) : (INITIAL_DATA.galleryList || []));
+      setArticlesList(localArticles ? JSON.parse(localArticles) : (INITIAL_DATA.articlesList || []));
+      setTeamList(localTeam ? JSON.parse(localTeam) : (INITIAL_DATA.teamMembers || []));
+    } catch (e) {
+      setProkerList(INITIAL_DATA.prokerList || []);
+      setGalleryList(INITIAL_DATA.galleryList || []);
+      setArticlesList(INITIAL_DATA.articlesList || []);
+      setTeamList(INITIAL_DATA.teamMembers || []);
+    }
+  }, []);
+
+  // Auto-sync mutations to localStorage for instant reflect on Home & Anggota pages
+  useEffect(() => {
+    if (prokerList) localStorage.setItem('kkn_proker_list', JSON.stringify(prokerList));
+  }, [prokerList]);
+
+  useEffect(() => {
+    if (galleryList) localStorage.setItem('kkn_gallery_list', JSON.stringify(galleryList));
+  }, [galleryList]);
+
+  useEffect(() => {
+    if (articlesList) localStorage.setItem('kkn_articles_list', JSON.stringify(articlesList));
+  }, [articlesList]);
+
+  useEffect(() => {
+    if (teamList) localStorage.setItem('kkn_team_list', JSON.stringify(teamList));
+  }, [teamList]);
 
   // Check login session on client mount
   useEffect(() => {
@@ -192,14 +237,17 @@ export default function AdminPage() {
           const { error } = await supabase.from('proker').update(updatePayload).eq('id', editingProkerId);
           if (error) throw error;
           showToast('success', `Proker "${title}" berhasil diperbarui!`);
+          await fetchAllData();
         } catch (err) {
           showToast('error', 'Gagal update proker: ' + (err.message || err));
           return;
         }
+      } else {
+        setProkerList(prev => prev.map(p => p.id === editingProkerId ? { ...p, ...updatePayload } : p));
+        showToast('success', `Proker "${title}" berhasil diperbarui!`);
       }
 
       resetProkerForm();
-      await fetchAllData();
     } else {
       // INSERT Mode
       const item = { ...newProker, id: `proker-${Date.now()}` };
@@ -209,14 +257,17 @@ export default function AdminPage() {
           const { error } = await supabase.from('proker').insert([item]);
           if (error) throw error;
           showToast('success', `Proker "${item.title}" berhasil ditambahkan!`);
+          await fetchAllData();
         } catch (err) {
           showToast('error', 'Gagal menambah proker: ' + (err.message || err));
           return;
         }
+      } else {
+        setProkerList(prev => [item, ...prev]);
+        showToast('success', `Proker "${item.title}" berhasil ditambahkan!`);
       }
 
       resetProkerForm();
-      await fetchAllData();
     }
   };
 
@@ -245,13 +296,16 @@ export default function AdminPage() {
         const { error } = await supabase.from('proker').delete().eq('id', id);
         if (error) throw error;
         showToast('success', 'Proker berhasil dihapus!');
+        await fetchAllData();
       } catch (err) {
         showToast('error', 'Gagal menghapus proker: ' + (err.message || err));
         return;
       }
+    } else {
+      setProkerList(prev => prev.filter(p => p.id !== id));
+      showToast('success', 'Proker berhasil dihapus!');
     }
     if (editingProkerId === id) resetProkerForm();
-    await fetchAllData();
   };
 
   // Reset Gallery Form
@@ -284,20 +338,24 @@ export default function AdminPage() {
           const { error } = await supabase.from('gallery').update(updatePayload).eq('id', editingGalleryId);
           if (error) throw error;
           showToast('success', `Foto "${newGallery.title}" berhasil diperbarui!`);
+          await fetchAllData();
         } catch (err) {
           showToast('error', 'Gagal update galeri: ' + (err.message || err));
           return;
         }
+      } else {
+        setGalleryList(prev => prev.map(g => g.id === editingGalleryId ? { ...g, ...updatePayload, prokerCategory: newGallery.prokerCategory } : g));
+        showToast('success', `Foto "${newGallery.title}" berhasil diperbarui!`);
       }
 
       resetGalleryForm();
-      await fetchAllData();
     } else {
       // INSERT Mode
       const item = {
         id: `gal-${Date.now()}`,
         title: newGallery.title,
         prokercategory: newGallery.prokerCategory,
+        prokerCategory: newGallery.prokerCategory,
         caption: newGallery.caption,
         image: newGallery.image
       };
@@ -307,14 +365,17 @@ export default function AdminPage() {
           const { error } = await supabase.from('gallery').insert([item]);
           if (error) throw error;
           showToast('success', `Foto "${item.title}" berhasil ditambahkan!`);
+          await fetchAllData();
         } catch (err) {
           showToast('error', 'Gagal menambah foto: ' + (err.message || err));
           return;
         }
+      } else {
+        setGalleryList(prev => [item, ...prev]);
+        showToast('success', `Foto "${item.title}" berhasil ditambahkan!`);
       }
 
       resetGalleryForm();
-      await fetchAllData();
     }
   };
 
@@ -330,6 +391,124 @@ export default function AdminPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // Reset Team Form
+  const resetTeamForm = () => {
+    setEditingTeamId(null);
+    setNewTeam({
+      name: '',
+      role: '',
+      division: 'Badan Pengurus Harian',
+      major: '',
+      photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+      quote: '',
+      instagram: '',
+      email: ''
+    });
+  };
+
+  // Add / Edit Team Member Handler
+  const handleSaveTeam = async (e) => {
+    e.preventDefault();
+    if (!newTeam.name) return;
+
+    if (editingTeamId) {
+      // UPDATE Mode
+      const updatePayload = {
+        name: newTeam.name,
+        role: newTeam.role,
+        division: newTeam.division,
+        major: newTeam.major,
+        photo: newTeam.photo,
+        quote: newTeam.quote,
+        instagram: newTeam.instagram,
+        email: newTeam.email
+      };
+
+      if (isSupabaseConfigured && supabase) {
+        try {
+          const { error } = await supabase.from('team_members').update(updatePayload).eq('id', editingTeamId);
+          if (error) throw error;
+          showToast('success', `Anggota "${newTeam.name}" berhasil diperbarui!`);
+          await fetchAllData();
+        } catch (err) {
+          showToast('error', 'Gagal update anggota: ' + (err.message || err));
+          return;
+        }
+      } else {
+        setTeamList(prev => prev.map(m => m.id === editingTeamId ? { ...m, ...updatePayload } : m));
+        showToast('success', `Anggota "${newTeam.name}" diperbarui!`);
+      }
+
+      resetTeamForm();
+    } else {
+      // INSERT Mode
+      const item = {
+        id: `tm-${Date.now()}`,
+        name: newTeam.name,
+        role: newTeam.role,
+        division: newTeam.division,
+        major: newTeam.major,
+        photo: newTeam.photo,
+        quote: newTeam.quote,
+        instagram: newTeam.instagram,
+        email: newTeam.email
+      };
+
+      if (isSupabaseConfigured && supabase) {
+        try {
+          const { error } = await supabase.from('team_members').insert([item]);
+          if (error) throw error;
+          showToast('success', `Anggota "${item.name}" berhasil ditambahkan!`);
+          await fetchAllData();
+        } catch (err) {
+          showToast('error', 'Gagal menambah anggota: ' + (err.message || err));
+          return;
+        }
+      } else {
+        setTeamList(prev => [item, ...prev]);
+        showToast('success', `Anggota "${item.name}" ditambahkan!`);
+      }
+
+      resetTeamForm();
+    }
+  };
+
+  // Start Editing Team Member
+  const handleStartEditTeam = (item) => {
+    setEditingTeamId(item.id);
+    setNewTeam({
+      name: item.name || '',
+      role: item.role || '',
+      division: item.division || 'Badan Pengurus Harian',
+      major: item.major || '',
+      photo: item.photo || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+      quote: item.quote || '',
+      instagram: item.instagram || '',
+      email: item.email || ''
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Delete Team Member
+  const handleDeleteTeam = async (id) => {
+    if (!confirm('Apakah Anda yakin ingin menghapus anggota tim ini?')) return;
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { error } = await supabase.from('team_members').delete().eq('id', id);
+        if (error) throw error;
+        showToast('success', 'Anggota tim berhasil dihapus!');
+        await fetchAllData();
+      } catch (err) {
+        showToast('error', 'Gagal menghapus anggota tim: ' + (err.message || err));
+        return;
+      }
+    } else {
+      setTeamList(prev => prev.filter(m => m.id !== id));
+      showToast('success', 'Anggota tim berhasil dihapus!');
+    }
+    if (editingTeamId === id) resetTeamForm();
+  };
+
   // Delete Contact Message
   const handleDeleteContact = async (id) => {
     if (!confirm('Apakah Anda yakin ingin menghapus pesan ini?')) return;
@@ -338,13 +517,15 @@ export default function AdminPage() {
         const { error } = await supabase.from('contacts').delete().eq('id', id);
         if (error) throw error;
         showToast('success', 'Pesan berhasil dihapus!');
+        await fetchAllData();
       } catch (err) {
         showToast('error', 'Gagal menghapus pesan: ' + (err.message || err));
         return;
       }
+    } else {
+      setContactsList(prev => prev.filter(c => c.id !== id));
+      showToast('success', 'Pesan berhasil dihapus!');
     }
-    setContactsList(contactsList.filter(c => c.id !== id));
-    await fetchAllData();
   };
 
   // -------------------------------------------------------------
@@ -549,6 +730,18 @@ export default function AdminPage() {
           >
             <ImageIcon className="w-4 h-4" />
             <span>Kelola Galeri Foto ({galleryList.length})</span>
+          </button>
+
+          <button
+            onClick={() => { setActiveTab('team'); resetTeamForm(); }}
+            className={`flex-1 py-3 px-4 text-xs sm:text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
+              activeTab === 'team'
+                ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-white shadow-md'
+                : 'text-slate-600 hover:text-brand-navy hover:bg-slate-50'
+            }`}
+          >
+            <User className="w-4 h-4" />
+            <span>Anggota Tim ({teamList.length})</span>
           </button>
 
           <button
@@ -933,6 +1126,240 @@ export default function AdminPage() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* TAB 4: KELOLA ANGGOTA TIM */}
+        {activeTab === 'team' && (
+          <div className="space-y-8 animate-fade-in-up">
+            
+            {/* Form Tambah / Edit Anggota Tim */}
+            <form onSubmit={handleSaveTeam} className="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-4 relative">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h2 className="text-base font-bold text-brand-gold uppercase tracking-wider flex items-center gap-2">
+                  <User className="w-5 h-5 text-brand-navy" />
+                  <span>{editingTeamId ? 'Edit Data Anggota Tim' : 'Tambah Anggota Tim Baru'}</span>
+                </h2>
+                {editingTeamId && (
+                  <button
+                    type="button"
+                    onClick={resetTeamForm}
+                    className="px-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold transition-all"
+                  >
+                    Batal Edit
+                  </button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-brand-navy uppercase tracking-wider mb-1">
+                    Nama Lengkap Mahasiswa *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Contoh: Rizky Ramadhan"
+                    value={newTeam.name}
+                    onChange={(e) => setNewTeam({ ...newTeam, name: e.target.value })}
+                    className="w-full bg-slate-50 border border-slate-300 text-brand-navy text-xs sm:text-sm rounded-xl px-4 py-2.5 focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/20 outline-none transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-brand-navy uppercase tracking-wider mb-1">
+                    Jabatan / Peran di KKN *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Contoh: Ketua Kelompok KKN"
+                    value={newTeam.role}
+                    onChange={(e) => setNewTeam({ ...newTeam, role: e.target.value })}
+                    className="w-full bg-slate-50 border border-slate-300 text-brand-navy text-xs sm:text-sm rounded-xl px-4 py-2.5 focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/20 outline-none transition-all"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-brand-navy uppercase tracking-wider mb-1">
+                    Divisi Pengabdian *
+                  </label>
+                  <select
+                    value={newTeam.division}
+                    onChange={(e) => setNewTeam({ ...newTeam, division: e.target.value })}
+                    className="w-full bg-slate-50 border border-slate-300 text-brand-navy text-xs sm:text-sm rounded-xl px-4 py-2.5 focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/20 outline-none transition-all font-semibold"
+                  >
+                    <option value="Badan Pengurus Harian">Badan Pengurus Harian</option>
+                    <option value="Ekonomi & UMKM">Ekonomi & UMKM</option>
+                    <option value="Lingkungan & Kebersihan">Lingkungan & Kebersihan</option>
+                    <option value="Kesehatan & Gizi">Kesehatan & Gizi</option>
+                    <option value="Pendidikan & Kebudayaan">Pendidikan & Kebudayaan</option>
+                    <option value="PDD & Teknologi">PDD & Teknologi</option>
+                    <option value="Humas & Publikasi">Humas & Publikasi</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-brand-navy uppercase tracking-wider mb-1">
+                    Program Studi / Jurusan *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Contoh: Teknik Informatika"
+                    value={newTeam.major}
+                    onChange={(e) => setNewTeam({ ...newTeam, major: e.target.value })}
+                    className="w-full bg-slate-50 border border-slate-300 text-brand-navy text-xs sm:text-sm rounded-xl px-4 py-2.5 focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/20 outline-none transition-all"
+                  />
+                </div>
+              </div>
+
+              {/* Upload Foto Profil */}
+              <div>
+                <label className="block text-xs font-bold text-brand-navy uppercase tracking-wider mb-1">
+                  Foto Profil Anggota (URL atau Unggah) *
+                </label>
+                <div className="flex flex-col sm:flex-row items-center gap-3">
+                  <input
+                    type="text"
+                    required
+                    placeholder="https://..."
+                    value={newTeam.photo}
+                    onChange={(e) => setNewTeam({ ...newTeam, photo: e.target.value })}
+                    className="w-full bg-slate-50 border border-slate-300 text-brand-navy text-xs sm:text-sm rounded-xl px-4 py-2.5 focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/20 outline-none transition-all"
+                  />
+                  <label className={`w-full sm:w-auto px-4 py-2.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-brand-gold border border-amber-300 font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition-all flex-shrink-0 ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                    <ImageIcon className="w-4 h-4" />
+                    <span>{isUploading ? 'Mengunggah...' : 'Unggah Foto'}</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      disabled={isUploading}
+                      onChange={(e) => handleFileUpload(e, setNewTeam, 'team-photos')}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-brand-navy uppercase tracking-wider mb-1">
+                    Instagram Handle (Opsional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Contoh: @rizky.ramadhan"
+                    value={newTeam.instagram}
+                    onChange={(e) => setNewTeam({ ...newTeam, instagram: e.target.value })}
+                    className="w-full bg-slate-50 border border-slate-300 text-brand-navy text-xs sm:text-sm rounded-xl px-4 py-2.5 focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/20 outline-none transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-brand-navy uppercase tracking-wider mb-1">
+                    Email Kontak (Opsional)
+                  </label>
+                  <input
+                    type="email"
+                    placeholder="Contoh: nama@domain.com"
+                    value={newTeam.email}
+                    onChange={(e) => setNewTeam({ ...newTeam, email: e.target.value })}
+                    className="w-full bg-slate-50 border border-slate-300 text-brand-navy text-xs sm:text-sm rounded-xl px-4 py-2.5 focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/20 outline-none transition-all"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-brand-navy uppercase tracking-wider mb-1">
+                  Kutipan / Misi Pengabdian *
+                </label>
+                <textarea
+                  rows={2}
+                  required
+                  placeholder="Contoh: Memimpin dengan aksi, mengabdi untuk kemajuan Desa Karangrejo..."
+                  value={newTeam.quote}
+                  onChange={(e) => setNewTeam({ ...newTeam, quote: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-300 text-brand-navy text-xs sm:text-sm rounded-xl px-4 py-2.5 focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/20 outline-none transition-all"
+                ></textarea>
+              </div>
+
+              <div className="pt-2 flex justify-end">
+                <button
+                  type="submit"
+                  className="py-3 px-6 rounded-xl bg-gradient-to-r from-brand-gold to-amber-600 hover:from-amber-600 hover:to-brand-gold text-white font-bold text-xs sm:text-sm shadow-md transition-all flex items-center gap-2 btn-shimmer"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>{editingTeamId ? 'Simpan Perubahan Anggota' : 'Tambah Anggota Tim Baru'}</span>
+                </button>
+              </div>
+            </form>
+
+            {/* List Anggota Tim */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-base font-bold text-brand-navy flex items-center gap-2">
+                  <User className="w-5 h-5 text-brand-gold" />
+                  <span>Daftar Anggota Tim Terdaftar</span>
+                </h3>
+                <span className="px-3 py-1 text-xs font-bold rounded-full bg-amber-100 text-brand-gold border border-amber-300">
+                  Total: {teamList.length} Mahasiswa
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {teamList.map((item) => (
+                  <div key={item.id} className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all space-y-3 relative group flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center gap-3 mb-3">
+                        <img
+                          src={item.photo}
+                          alt={item.name}
+                          className="w-14 h-14 rounded-2xl object-cover border-2 border-brand-gold/40 flex-shrink-0"
+                          onError={(e) => { e.target.src = PLACEHOLDER_IMG; }}
+                        />
+                        <div>
+                          <h4 className="text-sm font-bold text-brand-navy">{item.name}</h4>
+                          <p className="text-xs font-bold text-brand-gold">{item.role}</p>
+                          <span className="text-[11px] text-slate-500 font-medium">{item.major}</span>
+                        </div>
+                      </div>
+
+                      {item.quote && (
+                        <p className="text-xs text-slate-600 italic bg-slate-50 p-2.5 rounded-xl border border-slate-100 line-clamp-2">
+                          "{item.quote}"
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                      <span className="px-2.5 py-0.5 text-[10px] font-bold rounded-md bg-slate-100 text-slate-600">
+                        {item.division || 'Anggota Tim'}
+                      </span>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleStartEditTeam(item)}
+                          className="p-1.5 rounded-lg bg-amber-50 text-brand-gold hover:bg-amber-100 border border-amber-200 transition-colors"
+                          title="Edit Anggota"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteTeam(item.id)}
+                          className="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 transition-colors"
+                          title="Hapus Anggota"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 

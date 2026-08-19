@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import { Calendar, User, ArrowRight, X, BookMarked, FileText } from 'lucide-react';
 
 export default function ArticlesSection({ articlesList }) {
@@ -53,11 +54,12 @@ export default function ArticlesSection({ articlesList }) {
             >
               <div className="space-y-4">
                 <div className="relative h-52 rounded-2xl overflow-hidden bg-slate-100">
-                  <img
+                  <Image
                     src={article.coverImage || article.coverimage || PLACEHOLDER_IMG}
                     alt={article.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    onError={(e) => { e.target.src = PLACEHOLDER_IMG; }}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   <div className="absolute top-3 left-3">
                     <span className="px-3 py-1 text-xs font-bold rounded-lg bg-white/90 text-brand-navy border border-slate-200 backdrop-blur-md shadow-sm">
@@ -110,11 +112,13 @@ export default function ArticlesSection({ articlesList }) {
             
             {/* Modal Image Header */}
             <div className="relative h-64 sm:h-72 w-full">
-              <img
+              <Image
                 src={activeArticleModal.coverImage || activeArticleModal.coverimage || PLACEHOLDER_IMG}
                 alt={activeArticleModal.title}
-                className="w-full h-full object-cover"
-                onError={(e) => { e.target.src = PLACEHOLDER_IMG; }}
+                fill
+                sizes="(max-width: 768px) 100vw, 768px"
+                className="object-cover"
+                priority
               />
               <button
                 onClick={() => setActiveArticleModal(null)}
@@ -143,7 +147,7 @@ export default function ArticlesSection({ articlesList }) {
               </div>
 
               <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-brand-navy text-sm font-medium italic">
-                "{activeArticleModal.summary}"
+                &quot;{activeArticleModal.summary}&quot;
               </div>
 
               {/* Formatted Article Body */}
