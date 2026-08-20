@@ -11,7 +11,7 @@ export default function ProkerSection({ prokerList }) {
 
   const PLACEHOLDER_IMG = 'https://images.unsplash.com/photo-1588345921523-c2dcdb7f1dcd?auto=format&fit=crop&w=800&q=80';
 
-  const categories = ['Semua', 'Ekonomi & UMKM', 'Lingkungan', 'Pendidikan', 'Kesehatan', 'Teknologi'];
+  const categories = ['Semua', 'Proker Utama', 'Proker Tambahan'];
 
   const filteredProker = prokerList.filter(item => {
     const matchesCategory = selectedCategory === 'Semua' || item.category === selectedCategory;

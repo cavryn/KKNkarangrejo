@@ -78,7 +78,7 @@ export default function AdminPage() {
   // Form State Proker
   const [newProker, setNewProker] = useState({
     title: '',
-    category: 'Acara',
+    category: 'Proker Utama',
     status: 'Selesai',
     date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
     description: '',
@@ -262,7 +262,7 @@ export default function AdminPage() {
     setEditingProkerId(null);
     setNewProker({
       title: '',
-      category: 'Acara',
+      category: 'Proker Utama',
       status: 'Selesai',
       date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
       description: '',
@@ -327,7 +327,7 @@ export default function AdminPage() {
     setEditingProkerId(item.id);
     setNewProker({
       title: item.title || '',
-      category: item.category || 'Acara',
+      category: item.category || 'Proker Utama',
       status: item.status || 'Selesai',
       date: item.date || new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
       description: item.description || '',
@@ -932,11 +932,8 @@ export default function AdminPage() {
                     onChange={(e) => setNewProker({ ...newProker, category: e.target.value })}
                     className="w-full bg-slate-50 border border-slate-300 text-brand-navy text-xs sm:text-sm rounded-xl px-4 py-2.5 focus:border-brand-gold outline-none shadow-sm transition-all focus:ring-2 focus:ring-brand-gold/20"
                   >
-                    <option value="Ekonomi & UMKM">Ekonomi & UMKM</option>
-                    <option value="Lingkungan">Lingkungan</option>
-                    <option value="Pendidikan">Pendidikan</option>
-                    <option value="Kesehatan">Kesehatan</option>
-                    <option value="Teknologi">Teknologi</option>
+                    <option value="Proker Utama">Proker Utama</option>
+                    <option value="Proker Tambahan">Proker Tambahan</option>
                   </select>
                 </div>
               </div>

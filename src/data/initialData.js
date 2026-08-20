@@ -18,7 +18,7 @@ export const INITIAL_DATA = {
     {
       id: "proker-1",
       title: "Digitalisasi & Branding UMKM Olahan Pangan Lokal",
-      category: "Ekonomi & UMKM",
+      category: "Proker Utama",
       status: "Selesai",
       date: "12 Juli 2026",
       objective: "Membantu pelaku UMKM Desa Karangrejo memperluas jangkauan pasar melalui pendaftaran Google Maps, pembuatan kemasan kedap udara, dan materi promosi sosial media.",
@@ -30,7 +30,7 @@ export const INITIAL_DATA = {
     {
       id: "proker-2",
       title: "Edukasi Pemilahan Sampah & Pelatihan Kompos Rumah Tangga",
-      category: "Lingkungan",
+      category: "Proker Utama",
       status: "Selesai",
       date: "15 Juli 2026",
       objective: "Meningkatkan kesadaran lingkungan warga Desa Karangrejo terhadap pengelolaan sampah organik dan anorganik skala rumah tangga.",
@@ -42,7 +42,7 @@ export const INITIAL_DATA = {
     {
       id: "proker-3",
       title: "Bimbingan Belajar Bahasa Inggris & Pojok Baca Digital",
-      category: "Pendidikan",
+      category: "Proker Tambahan",
       status: "Berjalan",
       date: "18 Juli 2026",
       objective: "Meningkatkan literasi dan keterampilan berbahasa Inggris anak-anak sekolah dasar di Desa Karangrejo melalui metode gamifikasi interaktif.",
@@ -54,7 +54,7 @@ export const INITIAL_DATA = {
     {
       id: "proker-4",
       title: "Pemeriksaan Kesehatan Gratis & Pencegahan Stunting",
-      category: "Kesehatan",
+      category: "Proker Tambahan",
       status: "Selesai",
       date: "22 Juli 2026",
       objective: "Mendukung posyandu balita dan lansia dalam pemantauan gizi anak serta pemeriksaan tekanan darah dan gula darah.",
@@ -66,7 +66,7 @@ export const INITIAL_DATA = {
     {
       id: "proker-5",
       title: "Pembuatan Website Profil Resmi Desa & Peta Tematik Digital",
-      category: "Teknologi",
+      category: "Proker Utama",
       status: "Berjalan",
       date: "25 Juli 2026",
       objective: "Menyediakan etalase digital dokumentasi KKN dan informasi publik desa agar mudah diakses oleh pihak kampus, warga, dan pengunjung.",

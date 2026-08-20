@@ -188,11 +188,8 @@ export default function AdminModal({ isOpen, onClose, prokerList, setProkerList,
                       onChange={(e) => setNewProker({ ...newProker, category: e.target.value })}
                       className="w-full bg-white border border-slate-300 text-brand-navy text-xs rounded-xl px-3 py-2 focus:border-brand-gold outline-none shadow-sm"
                     >
-                      <option value="Ekonomi & UMKM">Ekonomi & UMKM</option>
-                      <option value="Lingkungan">Lingkungan</option>
-                      <option value="Pendidikan">Pendidikan</option>
-                      <option value="Kesehatan">Kesehatan</option>
-                      <option value="Teknologi">Teknologi</option>
+                      <option value="Proker Utama">Proker Utama</option>
+                      <option value="Proker Tambahan">Proker Tambahan</option>
                     </select>
                   </div>
                 </div>
