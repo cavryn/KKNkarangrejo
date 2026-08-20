@@ -54,11 +54,26 @@ CREATE TABLE IF NOT EXISTS public.contacts (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Tabel Anggota Tim KKN
+CREATE TABLE IF NOT EXISTS public.team_members (
+  id TEXT PRIMARY KEY DEFAULT ('team-' || substr(md5(random()::text), 1, 8)),
+  name TEXT NOT NULL,
+  role TEXT,
+  division TEXT,
+  major TEXT,
+  photo TEXT,
+  quote TEXT,
+  instagram TEXT,
+  email TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Matikan Row Level Security (RLS) pada tabel agar dapat diakses aplikasi web
 ALTER TABLE public.proker DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.gallery DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.articles DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.contacts DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.team_members DISABLE ROW LEVEL SECURITY;
 
 
 -- --------------------------------------------------------------------

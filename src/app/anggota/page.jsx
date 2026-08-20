@@ -39,12 +39,11 @@ export default function TeamMembersPage() {
   const divisions = [
     'Semua',
     'Badan Pengurus Harian',
-    'Ekonomi & UMKM',
-    'Lingkungan & Kebersihan',
-    'Kesehatan & Gizi',
-    'Pendidikan & Kebudayaan',
-    'PDD & Teknologi',
-    'Humas & Publikasi'
+    'Acara',
+    'Humas',
+    'Konsumsi',
+    'Logtrans',
+    'PDD',
   ];
 
   const filteredMembers = teamMembers.filter((member) => {

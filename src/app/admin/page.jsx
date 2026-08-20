@@ -48,7 +48,7 @@ export default function AdminPage() {
   // Form State Proker
   const [newProker, setNewProker] = useState({
     title: '',
-    category: 'Ekonomi & UMKM',
+    category: 'Acara',
     status: 'Selesai',
     date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
     description: '',
@@ -211,7 +211,7 @@ export default function AdminPage() {
     setEditingProkerId(null);
     setNewProker({
       title: '',
-      category: 'Ekonomi & UMKM',
+      category: 'Acara',
       status: 'Selesai',
       date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
       description: '',
@@ -276,7 +276,7 @@ export default function AdminPage() {
     setEditingProkerId(item.id);
     setNewProker({
       title: item.title || '',
-      category: item.category || 'Ekonomi & UMKM',
+      category: item.category || 'Acara',
       status: item.status || 'Selesai',
       date: item.date || new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
       description: item.description || '',
@@ -1192,12 +1192,11 @@ export default function AdminPage() {
                     className="w-full bg-slate-50 border border-slate-300 text-brand-navy text-xs sm:text-sm rounded-xl px-4 py-2.5 focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/20 outline-none transition-all font-semibold"
                   >
                     <option value="Badan Pengurus Harian">Badan Pengurus Harian</option>
-                    <option value="Ekonomi & UMKM">Ekonomi & UMKM</option>
-                    <option value="Lingkungan & Kebersihan">Lingkungan & Kebersihan</option>
-                    <option value="Kesehatan & Gizi">Kesehatan & Gizi</option>
-                    <option value="Pendidikan & Kebudayaan">Pendidikan & Kebudayaan</option>
-                    <option value="PDD & Teknologi">PDD & Teknologi</option>
-                    <option value="Humas & Publikasi">Humas & Publikasi</option>
+                    <option value="Acara">Acara</option>
+                    <option value="Humas">Humas</option>
+                    <option value="Konsumsi">Konsumsi</option>
+                    <option value="Logtrans">Logtrans</option>
+                    <option value="PDD">PDD</option>
                   </select>
                 </div>
 
@@ -1237,7 +1236,25 @@ export default function AdminPage() {
                       type="file"
                       accept="image/*"
                       disabled={isUploading}
-                      onChange={(e) => handleFileUpload(e, setNewTeam, 'team-photos')}
+                      onChange={async (e) => {
+                        const file = e.target.files[0];
+                        if (!file) return;
+                        setIsUploading(true);
+                        try {
+                          const url = await uploadImage(file);
+                          if (url) {
+                            setNewTeam(prev => ({ ...prev, photo: url }));
+                            showToast('success', 'Foto profil berhasil diunggah!');
+                          } else {
+                            showToast('error', 'Gagal mendapatkan URL foto.');
+                          }
+                        } catch (err) {
+                          console.error("Gagal mengunggah foto:", err);
+                          showToast('error', 'Gagal mengunggah foto: ' + (err.message || err));
+                        } finally {
+                          setIsUploading(false);
+                        }
+                      }}
                       className="hidden"
                     />
                   </label>
