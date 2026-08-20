@@ -91,12 +91,12 @@ export default function ContactSection({ villageInfo }) {
                   <div>
                     <strong className="block text-brand-navy font-bold">Hubungi via WhatsApp:</strong>
                     <a
-                      href="https://wa.me/6281234567890?text=Halo%20Tim%20KKN%20Kelompok%203%20Karangrejo"
+                      href="https://wa.me/6281398728498?text=Halo%20Tim%20KKN%20Kelompok%203%20Karangrejo"
                       target="_blank"
                       rel="noreferrer"
                       className="text-brand-green font-bold hover:underline"
                     >
-                      +62 812-3456-7890 (Ketua KKN)
+                      +62 813-9872-8498 (Ketua KKN)
                     </a>
                   </div>
                 </div>
@@ -115,7 +115,7 @@ export default function ContactSection({ villageInfo }) {
 
             {/* Direct WhatsApp CTA Button */}
             <a
-              href="https://wa.me/6281234567890?text=Halo%20Tim%20KKN%20Kelompok%203"
+              href="https://wa.me/6281398728498?text=Halo%20Tim%20KKN%20Kelompok%203%20Karangrejo"
               target="_blank"
               rel="noreferrer"
               className="btn-shimmer w-full py-3.5 px-6 rounded-2xl bg-brand-green hover:bg-brand-greenHover text-white font-bold flex items-center justify-center gap-2 shadow-md shadow-brand-green/20 transition-all duration-300 hover:scale-[1.02]"

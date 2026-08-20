@@ -23,9 +23,18 @@ export const metadata = {
   description: 'Website resmi profil dan dokumentasi program kerja KKN Kelompok 3 di Desa Karangrejo, Kecamatan Ujungpangkah, Kabupaten Gresik. Menyajikan rekap kegiatan, galeri foto, modul artikel edukasi, dan profil kelompok.',
   keywords: ['KKN', 'Kelompok 3', 'Desa Karangrejo', 'Ujungpangkah', 'Gresik', 'Program Kerja KKN', 'Dokumentasi KKN', 'Profil KKN'],
   authors: [{ name: 'Tim KKN Kelompok 3 Desa Karangrejo' }],
+  icons: {
+    icon: [
+      { url: '/logo/logoonlyKKN.png', type: 'image/png' },
+      { url: '/favicon.ico', sizes: 'any' }
+    ],
+    shortcut: '/logo/logoonlyKKN.png',
+    apple: '/logo/logoonlyKKN.png',
+  },
   openGraph: {
     title: 'KKN Kelompok 3 — Desa Karangrejo, Ujungpangkah, Kabupaten Gresik',
     description: 'Etalase digital & dokumentasi program kerja KKN Kelompok 3 di Desa Karangrejo, Kecamatan Ujungpangkah, Kabupaten Gresik.',
+    images: ['/logo/KKN.png'],
     type: 'website',
   },
 };

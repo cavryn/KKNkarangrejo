@@ -401,29 +401,29 @@ export default function AdminPage() {
 
       resetGalleryForm();
     } else {
-      // INSERT Mode
-      const item = {
+      // INSERT Mode — gunakan nama kolom prokercategory yang sesuai dengan tabel Supabase
+      const dbItem = {
         id: `gal-${Date.now()}`,
         title: newGallery.title,
-        prokercategory: newGallery.prokerCategory,
-        prokerCategory: newGallery.prokerCategory,
+        prokercategory: newGallery.prokerCategory || 'Lingkungan',
         caption: newGallery.caption,
         image: newGallery.image
       };
 
       if (isSupabaseConfigured && supabase) {
         try {
-          const { error } = await supabase.from('gallery').insert([item]);
+          const { error } = await supabase.from('gallery').insert([dbItem]);
           if (error) throw error;
-          showToast('success', `Foto "${item.title}" berhasil ditambahkan!`);
+          showToast('success', `Foto "${dbItem.title}" berhasil ditambahkan!`);
           await fetchAllData();
         } catch (err) {
           showToast('error', 'Gagal menambah foto: ' + (err.message || err));
           return;
         }
       } else {
-        setGalleryList(prev => [item, ...prev]);
-        showToast('success', `Foto "${item.title}" berhasil ditambahkan!`);
+        const localItem = { ...dbItem, prokerCategory: newGallery.prokerCategory || 'Lingkungan' };
+        setGalleryList(prev => [localItem, ...prev]);
+        showToast('success', `Foto "${dbItem.title}" berhasil ditambahkan!`);
       }
 
       resetGalleryForm();
