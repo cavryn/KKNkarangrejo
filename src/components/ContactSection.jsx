@@ -55,10 +55,6 @@ export default function ContactSection({ villageInfo }) {
         
         {/* Header */}
         <div className="reveal text-center max-w-3xl mx-auto mb-16 space-y-3">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-xs font-bold text-brand-gold uppercase tracking-widest mb-3">
-            <Mail className="w-3.5 h-3.5" />
-            <span>Hubungi Kami</span>
-          </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-navy">
             Hubungi <span className="text-gradient-gold">Tim KKN Kelompok 3</span>
           </h2>
@@ -72,7 +68,7 @@ export default function ContactSection({ villageInfo }) {
           {/* Info Card */}
           <div className="reveal p-8 rounded-3xl bg-gradient-to-br from-slate-50 to-amber-50/30 border border-slate-200 space-y-8 flex flex-col justify-between shadow-card hover:shadow-gold transition-all duration-300">
             <div className="space-y-6">
-              <h3 className="text-2xl font-bold text-brand-navy">Posko Informasi KKN</h3>
+              <h3 className="text-2xl font-bold text-brand-navy">Informasi KKN Kelompok 3</h3>
               <p className="text-sm text-slate-600 leading-relaxed">
                 Kami siap menerima masukan dari warga Desa Karangrejo, pihak desa, dosen pembimbing, maupun kampus.
               </p>
@@ -83,7 +79,7 @@ export default function ContactSection({ villageInfo }) {
                     <MapPin className="w-5 h-5" />
                   </div>
                   <div>
-                    <strong className="block text-brand-navy font-bold">Alamat Posko:</strong>
+                    <strong className="block text-brand-navy font-bold">Lokasi Pengabdian:</strong>
                     <span className="text-slate-600">{villageInfo.location}</span>
                   </div>
                 </div>

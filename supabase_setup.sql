@@ -32,15 +32,33 @@ CREATE TABLE IF NOT EXISTS public.gallery (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Tabel Artikel & Modul Edukasi
-CREATE TABLE IF NOT EXISTS public.articles (
+-- Tabel Berita & Kabar KKN (BARU - menggantikan articles)
+CREATE TABLE IF NOT EXISTS public.news (
   id TEXT PRIMARY KEY,
   title TEXT NOT NULL,
   category TEXT,
   author TEXT,
   date TEXT,
+  "readTime" TEXT,
   summary TEXT,
-  coverimage TEXT,
+  "coverImage" TEXT,
+  content TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Tabel Modul & Panduan Edukasi (BARU - menggantikan articles)
+CREATE TABLE IF NOT EXISTS public.modules (
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  category TEXT,
+  author TEXT,
+  date TEXT,
+  pages TEXT,
+  "fileSize" TEXT,
+  "fileUrl" TEXT,
+  images TEXT,
+  summary TEXT,
+  "coverImage" TEXT,
   content TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -71,7 +89,8 @@ CREATE TABLE IF NOT EXISTS public.team_members (
 -- Matikan Row Level Security (RLS) pada tabel agar dapat diakses aplikasi web
 ALTER TABLE public.proker DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.gallery DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.articles DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.news DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.modules DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.contacts DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.team_members DISABLE ROW LEVEL SECURITY;
 
@@ -81,7 +100,7 @@ ALTER TABLE public.team_members DISABLE ROW LEVEL SECURITY;
 -- --------------------------------------------------------------------
 
 -- Buat Bucket Storage 'kkn-media' publik
-INSERT INTO storage.buckets (id, name, public) 
+INSERT INTO storage.buckets (id, name, public)
 VALUES ('kkn-media', 'kkn-media', true)
 ON CONFLICT (id) DO NOTHING;
 
@@ -103,28 +122,164 @@ CREATE POLICY "Allow Public Delete" ON storage.objects FOR DELETE USING (bucket_
 -- --------------------------------------------------------------------
 
 -- Data Awal Proker
-INSERT INTO public.proker (id, title, category, status, date, objective, target, description, image, impact)
-VALUES 
-('proker-1', 'Digitalisasi & Branding UMKM Olahan Pangan Lokal', 'Ekonomi & UMKM', 'Selesai', '12 Juli 2026', 'Membantu pelaku UMKM Desa Karangrejo memperluas jangkauan pasar melalui pendaftaran Google Maps, pembuatan kemasan kedap udara, dan materi promosi sosial media.', 'Pelaku UMKM Pangan Lokal Desa Karangrejo', 'Program ini mencakup restrukturisasi kemasan produk lokal, desain label nutrisi modern, pendaftaran Google Business Profile agar mudah ditemukan wisatawan, serta pelatihan pemasaran digital via Instagram & TikTok.', 'https://images.unsplash.com/photo-1556740758-90de374c12ad?auto=format&fit=crop&w=800&q=80', 'UMKM lokal berhasil terdaftar di Google Maps dan mengalami kenaikan jangkauan pesanan digital.'),
-('proker-2', 'Edukasi Pemilahan Sampah & Pelatihan Kompos Rumah Tangga', 'Lingkungan', 'Selesai', '15 Juli 2026', 'Meningkatkan kesadaran lingkungan warga Desa Karangrejo terhadap pengelolaan sampah organik dan anorganik skala rumah tangga.', 'Ibu-Ibu PKK & Warga Desa Karangrejo', 'Sosialisasi langsung pembuatan komposter sederhana memanfaatkan ember bekas dan bioaktivator EM4 untuk mengubah limbah dapur menjadi pupuk organik cair yang kaya unsur hara.', 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=800&q=80', 'Tersedianya unit komposter rumah tangga dan modul praktis pengolahan sampah.'),
-('proker-3', 'Bimbingan Belajar Bahasa Inggris & Pojok Baca Digital', 'Pendidikan', 'Berjalan', '18 Juli 2026', 'Meningkatkan literasi dan keterampilan berbahasa Inggris anak-anak sekolah dasar di Desa Karangrejo melalui metode gamifikasi interaktif.', 'Siswa Sekolah Dasar Desa Karangrejo', 'Pendirian Pojok Baca anak dengan koleksi buku fisik dan e-book interaktif, disertai kelas belajar Bahasa Inggris mingguan bernuansa permainan dan lagu edukatif.', 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=800&q=80', 'Anak-anak SD rutin mengikuti program Bimbel interaktif setiap akhir pekan.'),
-('proker-4', 'Pemeriksaan Kesehatan Gratis & Pencegahan Stunting', 'Kesehatan', 'Selesai', '22 Juli 2026', 'Mendukung posyandu balita dan lansia dalam pemantauan gizi anak serta pemeriksaan tekanan darah dan gula darah.', 'Balita, Ibu Hamil, dan Lansia Desa Karangrejo', 'Kolaborasi dengan bidan desa untuk mendistribusikan PMT (Pemberian Makanan Tambahan) gizi seimbang, edukasi isi piringku untuk cegah stunting, dan cek kesehatan lansia.', 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80', 'Warga terskrining kesehatan dan mendapat vitamin serta makanan tambahan gizi.'),
-('proker-5', 'Pembuatan Website Profil Resmi Desa & Peta Tematik Digital', 'Teknologi', 'Berjalan', '25 Juli 2026', 'Menyediakan etalase digital dokumentasi KKN dan informasi publik desa agar mudah diakses oleh pihak kampus, warga, dan pengunjung.', 'Perangkat Desa & Masyarakat Luas', 'Pengembangan sistem web berdesain modern yang menyajikan dokumentasi kegiatan KKN, direktori proker, galeri foto interaktif, serta repositori artikel modul.', 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80', 'Publikasi terbuka terpusat untuk akreditasi KKN & portofolio desa.')
+INSERT INTO public.proker (id, title, category, status, date, objective, target, description, image, impact) VALUES
+('proker-1', 'Digitalisasi & Branding UMKM Olahan Pangan Lokal', 'Ekonomi & UMKM', 'Selesai', '12 Juli 2026',
+  'Membantu pelaku UMKM Desa Karangrejo memperluas jangkauan pasar melalui pendaftaran Google Maps, pembuatan kemasan kedap udara, dan materi promosi sosial media.',
+  'Pelaku UMKM Pangan Lokal Desa Karangrejo',
+  'Program ini mencakup restrukturisasi kemasan produk lokal, desain label nutrisi modern, pendaftaran Google Business Profile agar mudah ditemukan wisatawan, serta pelatihan pemasaran digital via Instagram & TikTok.',
+  'https://images.unsplash.com/photo-1556740758-90de374c12ad?auto=format&fit=crop&w=800&q=80',
+  'UMKM lokal berhasil terdaftar di Google Maps dan mengalami kenaikan jangkauan pesanan digital.'),
+('proker-2', 'Edukasi Pemilahan Sampah & Pelatihan Kompos Rumah Tangga', 'Lingkungan', 'Selesai', '15 Juli 2026',
+  'Meningkatkan kesadaran lingkungan warga Desa Karangrejo terhadap pengelolaan sampah organik dan anorganik skala rumah tangga.',
+  'Ibu-Ibu PKK & Warga Desa Karangrejo',
+  'Sosialisasi langsung pembuatan komposter sederhana memanfaatkan ember bekas dan bioaktivator EM4 untuk mengubah limbah dapur menjadi pupuk organik cair yang kaya unsur hara.',
+  'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=800&q=80',
+  'Tersedianya unit komposter rumah tangga dan modul praktis pengolahan sampah.'),
+('proker-3', 'Bimbingan Belajar Bahasa Inggris & Pojok Baca Digital', 'Pendidikan', 'Berjalan', '18 Juli 2026',
+  'Meningkatkan literasi dan keterampilan berbahasa Inggris anak-anak sekolah dasar di Desa Karangrejo melalui metode gamifikasi interaktif.',
+  'Siswa Sekolah Dasar Desa Karangrejo',
+  'Pendirian Pojok Baca anak dengan koleksi buku fisik dan e-book interaktif, disertai kelas belajar Bahasa Inggris mingguan bernuansa permainan dan lagu edukatif.',
+  'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=800&q=80',
+  'Anak-anak SD rutin mengikuti program Bimbel interaktif setiap akhir pekan.'),
+('proker-4', 'Pemeriksaan Kesehatan Gratis & Pencegahan Stunting', 'Kesehatan', 'Selesai', '22 Juli 2026',
+  'Mendukung posyandu balita dan lansia dalam pemantauan gizi anak serta pemeriksaan tekanan darah dan gula darah.',
+  'Balita, Ibu Hamil, dan Lansia Desa Karangrejo',
+  'Kolaborasi dengan bidan desa untuk mendistribusikan PMT gizi seimbang, edukasi isi piringku untuk cegah stunting, dan cek kesehatan lansia.',
+  'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80',
+  'Warga terskrining kesehatan dan mendapat vitamin serta makanan tambahan gizi.'),
+('proker-5', 'Pembuatan Website Profil Resmi Desa & Peta Tematik Digital', 'Teknologi', 'Berjalan', '25 Juli 2026',
+  'Menyediakan etalase digital dokumentasi KKN dan informasi publik desa agar mudah diakses oleh pihak kampus, warga, dan pengunjung.',
+  'Perangkat Desa & Masyarakat Luas',
+  'Pengembangan sistem web berdesain modern yang menyajikan dokumentasi kegiatan KKN, direktori proker, galeri foto interaktif, serta repositori artikel modul.',
+  'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80',
+  'Publikasi terbuka terpusat untuk akreditasi KKN & portofolio desa.')
 ON CONFLICT (id) DO NOTHING;
 
 -- Data Awal Galeri Foto
-INSERT INTO public.gallery (id, title, prokercategory, image, caption)
-VALUES
-('gal-1', 'Sosialisasi Pemilahan Sampah bersama Ibu PKK', 'Lingkungan', 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=800&q=80', 'Sesi demonstrasi pembuatan pupuk komposter dari sisa dapur di Balai Desa Karangrejo.'),
-('gal-2', 'Pendampingan Labeling Packaging UMKM Lokal', 'Ekonomi & UMKM', 'https://images.unsplash.com/photo-1556740758-90de374c12ad?auto=format&fit=crop&w=800&q=80', 'Perancangan desain kemasan pouch modern tahan lembab untuk produk lokal.'),
-('gal-3', 'Pemeriksaan Kesehatan Posyandu Lansia', 'Kesehatan', 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80', 'Cek gratis tekanan darah & asam urat lansia Desa Karangrejo.'),
-('gal-4', 'Kelas Bahasa Inggris Ceria Anak SD', 'Pendidikan', 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=800&q=80', 'Anak-anak antusias memperagakan kosakata hewan & warna dalam permainan kelompok.'),
-('gal-5', 'Diskusi Koordinasi dengan Kepala Desa Karangrejo', 'Teknologi', 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80', 'Penyampaian progres program kerja mingguan kepada pimpinan desa.')
+INSERT INTO public.gallery (id, title, prokercategory, image, caption) VALUES
+('gal-1', 'Sosialisasi Pemilahan Sampah bersama Ibu PKK', 'Lingkungan',
+  'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=800&q=80',
+  'Sesi demonstrasi pembuatan pupuk komposter dari sisa dapur di Balai Desa Karangrejo.'),
+('gal-2', 'Pendampingan Labeling Packaging UMKM Lokal', 'Ekonomi & UMKM',
+  'https://images.unsplash.com/photo-1556740758-90de374c12ad?auto=format&fit=crop&w=800&q=80',
+  'Perancangan desain kemasan pouch modern tahan lembab untuk produk lokal.'),
+('gal-3', 'Pemeriksaan Kesehatan Posyandu Lansia', 'Kesehatan',
+  'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80',
+  'Cek gratis tekanan darah & asam urat lansia Desa Karangrejo.'),
+('gal-4', 'Kelas Bahasa Inggris Ceria Anak SD', 'Pendidikan',
+  'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=800&q=80',
+  'Anak-anak antusias memperagakan kosakata hewan & warna dalam permainan kelompok.'),
+('gal-5', 'Diskusi Koordinasi dengan Kepala Desa Karangrejo', 'Teknologi',
+  'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80',
+  'Penyampaian progres program kerja mingguan kepada pimpinan desa.')
 ON CONFLICT (id) DO NOTHING;
 
--- Data Awal Artikel Modul
-INSERT INTO public.articles (id, title, category, author, date, summary, coverimage, content)
-VALUES
-('art-1', 'Panduan Praktis Pembuatan Kompos Rumah Tangga Tanpa Bau', 'Lingkungan & Edukasi', 'Tim Lingkungan KKN Kelompok 3', '16 Juli 2026', 'Pelajari langkah mudah mengubah sisa sampah dapur menjadi cairan pupuk organik kaya nutrisi menggunakan bahan sederhana di rumah.', 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=800&q=80', 'Sampah organik skala rumah tangga mencakup lebih dari 60% total volume limbah harian di pedesaan. Jika ditumpuk tanpa pengolahan, sampah ini berpotensi menimbulkan bau tak sedap dan mengundang bibit penyakit.'),
-('art-2', 'Strategi Mendaftarkan Usaha Lokal di Google Maps & Business Profile', 'Ekonomi & Digital', 'Tim Ekonomi & IT KKN Kelompok 3', '20 Juli 2026', 'Tutorial step-by-step gratis pendaftaran toko / UMKM desa ke peta digital Google agar mudah ditemukan pelanggan luar kota.', 'https://images.unsplash.com/photo-1556740758-90de374c12ad?auto=format&fit=crop&w=800&q=80', 'Di era digital, calon pembeli atau wisatawan mencari rekomendasi oleh-oleh langsung via smartphone. Jika UMKM Anda terdaftar di Google Maps, pembeli dapat menemukan rute, jam buka, nomor WhatsApp, dan foto produk dalam 1 kali klik.')
+-- Data Awal Berita KKN
+INSERT INTO public.news (id, title, category, author, date, "readTime", summary, "coverImage", content) VALUES
+('news-1',
+  'Pemberdayaan & Digitalisasi UMKM Pangan Lokal Resmi Diluncurkan di Karangrejo',
+  'Liputan Proker', 'Humas KKN Kelompok 3', '14 Juli 2026', '3 menit',
+  'Mahasiswa KKN Kelompok 3 menyelenggarakan workshop perdana branding kemasan kedap udara dan registrasi lokasi Google Maps bersama para pengrajin olahan pangan lokal.',
+  'https://images.unsplash.com/photo-1556740758-90de374c12ad?auto=format&fit=crop&w=800&q=80',
+  'Kegiatan pengabdian mahasiswa KKN Kelompok 3 di Desa Karangrejo resmi mengawali program kerja klaster ekonomi dengan menggelar pendampingan UMKM. Acara yang berlangsung di Balai Pertemuan Desa ini dihadiri oleh lebih dari 25 pelaku usaha olahan pangan rumahan dan perangkat desa.'),
+('news-2',
+  'Warga Antusias Ikuti Pemeriksaan Kesehatan Gratis & Sosialisasi Gizi Balita',
+  'Kabar Desa', 'Divisi Kesehatan KKN', '22 Juli 2026', '4 menit',
+  'Bekerjasama dengan tenaga kesehatan desa, layanan skrining kesehatan gratis dan konsultasi gizi pencegahan stunting dipadati puluhan balita dan lansia.',
+  'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80',
+  'Sebagai wujud kepedulian terhadap kualitas hidup masyarakat, mahasiswa KKN Kelompok 3 menggelar aksi sosial pelayanan pemeriksaan kesehatan gratis yang bertempat di balai posyandu.'),
+('news-3',
+  'Ciptakan Lingkungan Bersih, Pelatihan Komposter Rumah Tangga Digelar Bersama Ibu PKK',
+  'Edukasi & Lingkungan', 'Divisi Lingkungan KKN', '28 Juli 2026', '3 menit',
+  'Inovasi pengolahan limbah dapur menjadi pupuk organik cair disosialisasikan secara langsung dengan metode percontohan komposter ember kedap udara.',
+  'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=800&q=80',
+  'Pengelolaan sampah rumah tangga menjadi salah satu fokus utama mahasiswa KKN Kelompok 3 di Desa Karangrejo. Dalam rangka menekan volume sampah organik yang terbuang percuma, diselenggarakan pelatihan pembuatan komposter ember sederhana.')
+ON CONFLICT (id) DO NOTHING;
+
+-- Data Awal Modul Edukasi
+INSERT INTO public.modules (id, title, category, author, date, pages, "fileSize", summary, "coverImage", content) VALUES
+('mod-1',
+  'Panduan Praktis Pembuatan Kompos Rumah Tangga Tanpa Bau',
+  'Lingkungan & Pengolahan Limbah', 'Tim Lingkungan KKN Kelompok 3', '16 Juli 2026', '12 Halaman', '2.4 MB (PDF)',
+  'Modul SOP langkah demi langkah mengubah sisa sampah dapur menjadi cairan pupuk organik kaya nutrisi menggunakan bahan sederhana di rumah.',
+  'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=800&q=80',
+  'Sampah organik skala rumah tangga mencakup lebih dari 60% total volume limbah harian di pedesaan. Jika ditumpuk tanpa pengolahan, sampah ini berpotensi menimbulkan bau tak sedap dan mengundang bibit penyakit. Modul ini menjelaskan cara membuat komposter ember sederhana menggunakan EM4 dan bahan dapur.'),
+('mod-2',
+  'Strategi Mendaftarkan UMKM Lokal ke Google Maps & Business Profile',
+  'Ekonomi & UMKM', 'Tim Ekonomi & IT KKN Kelompok 3', '20 Juli 2026', '8 Halaman', '1.8 MB (PDF)',
+  'Tutorial step-by-step pendaftaran toko / UMKM desa ke peta digital Google agar mudah ditemukan pelanggan luar kota secara gratis.',
+  'https://images.unsplash.com/photo-1556740758-90de374c12ad?auto=format&fit=crop&w=800&q=80',
+  'Di era digital, calon pembeli atau wisatawan mencari rekomendasi oleh-oleh langsung via smartphone. Jika UMKM Anda terdaftar di Google Maps, pembeli dapat menemukan rute, jam buka, nomor WhatsApp, dan foto produk dalam 1 klik. Panduan ini memandu proses pendaftaran dari awal hingga selesai.')
+ON CONFLICT (id) DO NOTHING;
+
+-- Data Awal Anggota Tim KKN (17 Mahasiswa)
+INSERT INTO public.team_members (id, name, role, division, major, photo, quote, instagram, email) VALUES
+('tm-1', 'Rizky Ramadhan', 'Ketua Kelompok KKN', 'Ketua', 'Teknik Informatika',
+  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+  'Memimpin dengan aksi, mengabdi untuk kemajuan Desa Karangrejo, Ujungpangkah, Kabupaten Gresik.',
+  '@rizky.ramadhan', 'rizky.ramadhan@kknkarangrejo.id'),
+('tm-2', 'Nabila Putri', 'Sekretaris 1', 'Sekretaris', 'Ilmu Komunikasi',
+  'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80',
+  'Menjalin silaturahmi hangat dan keterbukaan informasi publik bersama warga desa.',
+  '@nabilaputri.id', 'nabila.putri@kknkarangrejo.id'),
+('tm-3', 'Fajar Pratama', 'Bendahara', 'Bendahara', 'Manajemen Ekonomi',
+  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
+  'Pengelolaan akuntabilitas keuangan pengabdian yang transparan dan efektif.',
+  '@fajarpratama.eco', 'fajar.pratama@kknkarangrejo.id'),
+('tm-4', 'Siti Aminah', 'Wakil Ketua Kelompok', 'Wakil', 'Kesehatan Masyarakat',
+  'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80',
+  'Sinergi dan kolaborasi pengabdian untuk kemakmuran masyarakat Karangrejo.',
+  '@siti.aminah_health', 'siti.aminah@kknkarangrejo.id'),
+('tm-5', 'Dimas Anggara', 'Koordinator Logtrans', 'Logtrans', 'Teknik Lingkungan',
+  'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80',
+  'Kesiapan logistik dan mobilitas lancar untuk seluruh agenda program kerja desa.',
+  '@dimasanggara_env', 'dimas.anggara@kknkarangrejo.id'),
+('tm-6', 'Anisa Rahma', 'Koordinator Acara', 'Acara', 'Pendidikan Guru Sekolah Dasar',
+  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80',
+  'Merancang rangkaian kegiatan yang berdampak positif dan menyenangkan bagi warga.',
+  '@anisa.rahma_edu', 'anisa.rahma@kknkarangrejo.id'),
+('tm-7', 'Ahmad Fauzi', 'Koordinator PDD', 'PDD', 'Teknik Informatika',
+  'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80',
+  'Digitalisasi informasi desa untuk transparansi dan aksesibilitas publik.',
+  '@ahmadfauzi_dev', 'ahmad.fauzi@kknkarangrejo.id'),
+('tm-8', 'Budi Santoso', 'Anggota Logtrans', 'Logtrans', 'Agribisnis',
+  'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&q=80',
+  'Mendukung operasional dan perlengkapan kegiatan lapangan secara optimal.',
+  '@budi.santoso_agri', 'budi.santoso@kknkarangrejo.id'),
+('tm-9', 'Dewi Lestari', 'Koordinator Humas', 'Humas', 'Ilmu Komunikasi',
+  'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=80',
+  'Menjembatani komunikasi yang harmonis antara mahasiswa dan masyarakat Karangrejo.',
+  '@dewilestari_media', 'dewi.lestari@kknkarangrejo.id'),
+('tm-10', 'Eko Prasetyo', 'Anggota Logtrans', 'Logtrans', 'Teknik Sipil',
+  'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=400&q=80',
+  'Menjamin kelengkapan fasilitas teknis pendukung seluruh proker KKN.',
+  '@eko.prasetyo_civil', 'eko.prasetyo@kknkarangrejo.id'),
+('tm-11', 'Fitri Handayani', 'Koordinator Konsumsi', 'Konsumsi', 'Ilmu Gizi',
+  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+  'Menjaga asupan gizi dan konsumsi bergizi seimbang untuk tim dan warga.',
+  '@fitri.nutrition', 'fitri.handayani@kknkarangrejo.id'),
+('tm-12', 'Gilang Ramadhan', 'Anggota PDD', 'PDD', 'Desain Komunikasi Visual',
+  'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=400&q=80',
+  'Mendesain materi visual dan publikasi kegiatan yang estetik dan informatif.',
+  '@gilang_design', 'gilang.ramadhan@kknkarangrejo.id'),
+('tm-13', 'Hany Septiani', 'Anggota Acara', 'Acara', 'Pendidikan Bahasa Inggris',
+  'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80',
+  'Menghadirkan suasana interaktif dan edukatif di setiap agenda pertemuan warga.',
+  '@hany.septiani_english', 'hany.septiani@kknkarangrejo.id'),
+('tm-14', 'Indra Wijaya', 'Anggota PDD', 'PDD', 'Sistem Informasi',
+  'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=400&q=80',
+  'Pengembangan etalase web desa agar potensi Karangrejo dikenal luas.',
+  '@indra.wijaya_is', 'indra.wijaya@kknkarangrejo.id'),
+('tm-15', 'Julia Kartika', 'Anggota Humas', 'Humas', 'Hubungan Internasional',
+  'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=400&q=80',
+  'Menjalin kemitraan dan publikasi kegiatan pengabdian masyarakat.',
+  '@julia.kartika_ir', 'julia.kartika@kknkarangrejo.id'),
+('tm-16', 'Kevin Kurniawan', 'Anggota Konsumsi', 'Konsumsi', 'Administrasi Bisnis',
+  'https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?auto=format&fit=crop&w=400&q=80',
+  'Memastikan ketersediaan kebutuhan konsumsi di setiap program kerja berjalan lancar.',
+  '@kevin.kurniawan_biz', 'kevin.kurniawan@kknkarangrejo.id'),
+('tm-17', 'Larasati Putri', 'Sekretaris 2', 'Sekretaris', 'Psikologi',
+  'https://images.unsplash.com/photo-1548142813-c348350df52b?auto=format&fit=crop&w=400&q=80',
+  'Mendukung tertib administrasi, notulensi, dan dokumentasi berkas KKN.',
+  '@larasati.putri_psych', 'larasati.putri@kknkarangrejo.id')
 ON CONFLICT (id) DO NOTHING;

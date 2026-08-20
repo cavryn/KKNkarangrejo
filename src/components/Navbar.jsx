@@ -2,15 +2,17 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
 
 const navLinks = [
   { name: 'Beranda', href: '#beranda', id: 'beranda' },
   { name: 'Tentang Kami', href: '#tentang', id: 'tentang' },
-  { name: 'Tim Anggota', href: '/anggota', id: 'anggota', isRoute: true },
+  { name: 'Tim Anggota', href: '#anggota', id: 'anggota' },
   { name: 'Program Kerja', href: '#proker', id: 'proker' },
   { name: 'Dokumentasi', href: '#dokumentasi', id: 'dokumentasi' },
-  { name: 'Modul & Artikel', href: '#artikel', id: 'artikel' },
+  { name: 'Berita', href: '#berita', id: 'berita' },
+  { name: 'Modul Edukasi', href: '#modul', id: 'modul' },
   { name: 'Kontak', href: '#kontak', id: 'kontak' },
 ];
 
@@ -18,6 +20,7 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('beranda');
+  const pathname = usePathname();
 
   // Scroll detector for Navbar background styling
   useEffect(() => {
@@ -26,18 +29,27 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Robust active section detection using scroll position check
+  // Sync active section with current page pathname
   useEffect(() => {
+    if (pathname === '/anggota') {
+      setActiveSection('anggota');
+    }
+  }, [pathname]);
+
+  // Active section detection using scroll position check on homepage
+  useEffect(() => {
+    if (pathname !== '/') return;
+
     const handleSectionScroll = () => {
       const sectionIds = navLinks.map(l => l.id);
-      const scrollPosition = window.scrollY + 200;
+      const scrollPosition = window.scrollY + 250;
 
       for (let i = sectionIds.length - 1; i >= 0; i--) {
         const id = sectionIds[i];
         const el = document.getElementById(id);
         if (el) {
-          const top = el.offsetTop;
-          if (scrollPosition >= top) {
+          const absoluteTop = el.getBoundingClientRect().top + window.pageYOffset;
+          if (scrollPosition >= absoluteTop) {
             setActiveSection(id);
             break;
           }
@@ -46,13 +58,17 @@ export default function Navbar() {
     };
 
     window.addEventListener('scroll', handleSectionScroll, { passive: true });
-    // Initial check
     handleSectionScroll();
 
     return () => window.removeEventListener('scroll', handleSectionScroll);
-  }, []);
+  }, [pathname]);
 
-  const handleNavClick = (e, id) => {
+  const handleNavClick = (e, id, href) => {
+    if (pathname !== '/') {
+      window.location.href = '/' + href;
+      return;
+    }
+
     e.preventDefault();
     setActiveSection(id);
     setMobileMenuOpen(false);
@@ -81,7 +97,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between gap-4">
 
           {/* Logo — using Next.js Image for optimization */}
-          <a href="#beranda" onClick={(e) => handleNavClick(e, 'beranda')} className="flex items-center gap-3 group flex-shrink-0">
+          <a href="#beranda" onClick={(e) => handleNavClick(e, 'beranda', '#beranda')} className="flex items-center gap-3 group flex-shrink-0">
             <div className="h-10 sm:h-11 flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
               <Image
                 src="/logo/KKNteks.png"
@@ -104,22 +120,11 @@ export default function Navbar() {
           <nav className="hidden md:flex items-center gap-1 bg-slate-100/70 px-3 py-1.5 rounded-full border border-slate-200/80">
             {navLinks.map((link) => {
               const isActive = activeSection === link.id;
-              if (link.isRoute) {
-                return (
-                  <Link
-                    key={link.name}
-                    href={link.href}
-                    className="relative px-3.5 py-1.5 text-sm font-semibold rounded-full transition-all duration-200 text-brand-navy hover:text-brand-gold hover:bg-white"
-                  >
-                    {link.name}
-                  </Link>
-                );
-              }
               return (
                 <a
                   key={link.name}
                   href={link.href}
-                  onClick={(e) => handleNavClick(e, link.id)}
+                  onClick={(e) => handleNavClick(e, link.id, link.href)}
                   className={`relative px-3.5 py-1.5 text-sm font-semibold rounded-full transition-all duration-200 ${isActive
                     ? 'bg-brand-gold text-white shadow-gold'
                     : 'text-brand-navy hover:text-brand-gold hover:bg-white'
@@ -154,27 +159,14 @@ export default function Navbar() {
           <div className="max-w-7xl mx-auto px-4 py-4 space-y-1">
             {navLinks.map((link, idx) => {
               const isActive = activeSection === link.id;
-              if (link.isRoute) {
-                return (
-                  <Link
-                    key={link.name}
-                    href={link.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    style={{ animationDelay: `${idx * 50}ms` }}
-                    className="flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all animate-fade-in text-brand-navy hover:bg-slate-50 hover:text-brand-gold"
-                  >
-                    {link.name}
-                  </Link>
-                );
-              }
               return (
                 <a
                   key={link.name}
                   href={link.href}
-                  onClick={(e) => handleNavClick(e, link.id)}
+                  onClick={(e) => handleNavClick(e, link.id, link.href)}
                   style={{ animationDelay: `${idx * 50}ms` }}
                   className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all animate-fade-in ${isActive
-                    ? 'bg-brand-gold/10 text-brand-gold border border-brand-gold/30'
+                    ? 'bg-brand-gold/10 text-brand-gold border border-brand-gold/30 font-bold'
                     : 'text-brand-navy hover:bg-slate-50 hover:text-brand-gold'
                     }`}
                 >

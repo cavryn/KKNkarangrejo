@@ -28,7 +28,10 @@ export default function TeamMembersPage() {
       if (!isSupabaseConfigured || !supabase) return;
       try {
         const { data, error } = await supabase.from('team_members').select('*').order('created_at', { ascending: true });
-        if (data && data.length > 0) setTeamMembers(data);
+        if (data && !error) {
+          setTeamMembers(data);
+          localStorage.setItem('kkn_team_list', JSON.stringify(data));
+        }
       } catch (err) {
         console.warn("Sinkronisasi Supabase tim error:", err);
       }
@@ -38,23 +41,50 @@ export default function TeamMembersPage() {
 
   const divisions = [
     'Semua',
-    'Badan Pengurus Harian',
-    'Acara',
+    'Ketua',
+    'Wakil',
+    'Bendahara',
+    'Sekretaris',
     'Humas',
+    'Acara',
     'Konsumsi',
     'Logtrans',
     'PDD',
   ];
 
-  const filteredMembers = teamMembers.filter((member) => {
-    const matchesDivision = selectedDivision === 'Semua' || member.division === selectedDivision;
-    const matchesSearch =
-      member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.major.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (member.division && member.division.toLowerCase().includes(searchQuery.toLowerCase()));
-    return matchesDivision && matchesSearch;
-  });
+  const DIVISION_ORDER = [
+    'Ketua',
+    'Wakil',
+    'Bendahara',
+    'Sekretaris',
+    'Humas',
+    'Acara',
+    'Konsumsi',
+    'Logtrans',
+    'PDD',
+  ];
+
+  const getDivisionRank = (div) => {
+    const idx = DIVISION_ORDER.indexOf(div);
+    return idx !== -1 ? idx : 999;
+  };
+
+  const filteredMembers = [...teamMembers]
+    .filter((member) => {
+      const matchesDivision = selectedDivision === 'Semua' || member.division === selectedDivision;
+      const matchesSearch =
+        member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        member.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        member.major.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (member.division && member.division.toLowerCase().includes(searchQuery.toLowerCase()));
+      return matchesDivision && matchesSearch;
+    })
+    .sort((a, b) => {
+      const rankA = getDivisionRank(a.division);
+      const rankB = getDivisionRank(b.division);
+      if (rankA !== rankB) return rankA - rankB;
+      return 0;
+    });
 
   return (
     <main className="min-h-screen bg-slate-50 text-brand-navy relative overflow-hidden">
@@ -90,11 +120,6 @@ export default function TeamMembersPage() {
       {/* Hero Banner Section */}
       <section className="pt-32 pb-14 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-xs font-bold text-brand-gold uppercase tracking-widest">
-            <Users className="w-3.5 h-3.5" />
-            <span>Struktur Kelompok & Profil Pengabdi</span>
-          </div>
-
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-brand-navy tracking-tight leading-tight">
             Tim <span className="text-gradient-gold">17 Mahasiswa</span> KKN Kelompok 3
           </h1>
@@ -110,7 +135,7 @@ export default function TeamMembersPage() {
               <div className="text-xs font-semibold text-slate-400">Mahasiswa Pengabdi</div>
             </div>
             <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-card text-center">
-              <div className="text-2xl sm:text-3xl font-extrabold text-brand-navy">7</div>
+              <div className="text-2xl sm:text-3xl font-extrabold text-brand-navy">{divisions.length - 1}</div>
               <div className="text-xs font-semibold text-slate-400">Divisi Pengabdian</div>
             </div>
             <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-card text-center">
@@ -291,7 +316,7 @@ export default function TeamMembersPage() {
               </div>
               <div className="pb-2">
                 <span className="px-3 py-1 rounded-xl bg-amber-50 text-brand-gold border border-amber-200 text-xs font-extrabold">
-                  Posko Gresik 2026
+                  KKN Gresik 2026
                 </span>
               </div>
             </div>

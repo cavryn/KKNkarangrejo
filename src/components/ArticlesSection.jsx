@@ -33,10 +33,6 @@ export default function ArticlesSection({ articlesList }) {
         
         {/* Header */}
         <div className="reveal text-center max-w-3xl mx-auto mb-12 space-y-3">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-xs font-bold text-brand-gold uppercase tracking-widest mb-3">
-            <FileText className="w-3.5 h-3.5" />
-            <span>Modul & Artikel</span>
-          </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-navy">
             Materi Edukasi & <span className="text-gradient-gold">Panduan Proker</span>
           </h2>

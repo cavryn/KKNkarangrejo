@@ -6,19 +6,14 @@ import Navbar from '@/components/Navbar';
 import HeroSection from '@/components/HeroSection';
 import AboutSection from '@/components/AboutSection';
 
+const LOADING_SPINNER = <div className="py-20 flex items-center justify-center"><div className="w-8 h-8 border-4 border-brand-gold/30 border-t-brand-gold rounded-full animate-spin" /></div>;
+
 // Lazy load below-fold sections to reduce initial JS bundle
-const ProkerSection = dynamic(() => import('@/components/ProkerSection'), {
-  loading: () => <div className="py-20 flex items-center justify-center"><div className="w-8 h-8 border-4 border-brand-gold/30 border-t-brand-gold rounded-full animate-spin" /></div>,
-});
-const GallerySection = dynamic(() => import('@/components/GallerySection'), {
-  loading: () => <div className="py-20 flex items-center justify-center"><div className="w-8 h-8 border-4 border-brand-gold/30 border-t-brand-gold rounded-full animate-spin" /></div>,
-});
-const ArticlesSection = dynamic(() => import('@/components/ArticlesSection'), {
-  loading: () => <div className="py-20 flex items-center justify-center"><div className="w-8 h-8 border-4 border-brand-gold/30 border-t-brand-gold rounded-full animate-spin" /></div>,
-});
-const ContactSection = dynamic(() => import('@/components/ContactSection'), {
-  loading: () => <div className="py-20 flex items-center justify-center"><div className="w-8 h-8 border-4 border-brand-gold/30 border-t-brand-gold rounded-full animate-spin" /></div>,
-});
+const ProkerSection = dynamic(() => import('@/components/ProkerSection'), { loading: () => LOADING_SPINNER });
+const GallerySection = dynamic(() => import('@/components/GallerySection'), { loading: () => LOADING_SPINNER });
+const NewsSection = dynamic(() => import('@/components/NewsSection'), { loading: () => LOADING_SPINNER });
+const ModulSection = dynamic(() => import('@/components/ModulSection'), { loading: () => LOADING_SPINNER });
+const ContactSection = dynamic(() => import('@/components/ContactSection'), { loading: () => LOADING_SPINNER });
 const Footer = dynamic(() => import('@/components/Footer'));
 
 import { INITIAL_DATA } from '@/data/initialData';
@@ -29,7 +24,8 @@ export default function Home() {
   const [villageInfo] = useState(INITIAL_DATA.villageInfo);
   const [prokerList, setProkerList] = useState(INITIAL_DATA.prokerList);
   const [galleryList, setGalleryList] = useState(INITIAL_DATA.galleryList);
-  const [articlesList, setArticlesList] = useState(INITIAL_DATA.articlesList);
+  const [newsList, setNewsList] = useState(INITIAL_DATA.newsList || []);
+  const [modulesList, setModulesList] = useState(INITIAL_DATA.modulesList || []);
   const [teamMembers, setTeamMembers] = useState(INITIAL_DATA.teamMembers);
 
   // Sync data with localStorage (from Admin edits) and Supabase
@@ -38,12 +34,14 @@ export default function Home() {
     try {
       const localProker = localStorage.getItem('kkn_proker_list');
       const localGallery = localStorage.getItem('kkn_gallery_list');
-      const localArticles = localStorage.getItem('kkn_articles_list');
+      const localNews = localStorage.getItem('kkn_news_list');
+      const localModules = localStorage.getItem('kkn_modules_list');
       const localTeam = localStorage.getItem('kkn_team_list');
 
       if (localProker) setProkerList(JSON.parse(localProker));
       if (localGallery) setGalleryList(JSON.parse(localGallery));
-      if (localArticles) setArticlesList(JSON.parse(localArticles));
+      if (localNews) setNewsList(JSON.parse(localNews));
+      if (localModules) setModulesList(JSON.parse(localModules));
       if (localTeam) setTeamMembers(JSON.parse(localTeam));
     } catch (e) {
       console.warn("Gagal membaca cache localStorage:", e);
@@ -53,17 +51,34 @@ export default function Home() {
     async function loadSupabaseData() {
       if (!isSupabaseConfigured || !supabase) return;
       try {
-        const [prokerRes, galleryRes, articlesRes, teamRes] = await Promise.all([
+        const [prokerRes, galleryRes, newsRes, modulesRes, teamRes] = await Promise.all([
           supabase.from('proker').select('*').order('created_at', { ascending: false }).limit(20),
           supabase.from('gallery').select('*').order('created_at', { ascending: false }).limit(30),
-          supabase.from('articles').select('*').order('created_at', { ascending: false }).limit(10),
+          supabase.from('news').select('*').order('created_at', { ascending: false }).limit(10),
+          supabase.from('modules').select('*').order('created_at', { ascending: true }).limit(10),
           supabase.from('team_members').select('*').order('created_at', { ascending: true })
         ]);
 
-        if (prokerRes.data && prokerRes.data.length > 0) setProkerList(prokerRes.data);
-        if (galleryRes.data && galleryRes.data.length > 0) setGalleryList(galleryRes.data);
-        if (articlesRes.data && articlesRes.data.length > 0) setArticlesList(articlesRes.data);
-        if (teamRes.data && teamRes.data.length > 0) setTeamMembers(teamRes.data);
+        if (prokerRes.data && !prokerRes.error) {
+          setProkerList(prokerRes.data);
+          localStorage.setItem('kkn_proker_list', JSON.stringify(prokerRes.data));
+        }
+        if (galleryRes.data && !galleryRes.error) {
+          setGalleryList(galleryRes.data);
+          localStorage.setItem('kkn_gallery_list', JSON.stringify(galleryRes.data));
+        }
+        if (newsRes.data && !newsRes.error) {
+          setNewsList(newsRes.data);
+          localStorage.setItem('kkn_news_list', JSON.stringify(newsRes.data));
+        }
+        if (modulesRes.data && !modulesRes.error) {
+          setModulesList(modulesRes.data);
+          localStorage.setItem('kkn_modules_list', JSON.stringify(modulesRes.data));
+        }
+        if (teamRes.data && !teamRes.error) {
+          setTeamMembers(teamRes.data);
+          localStorage.setItem('kkn_team_list', JSON.stringify(teamRes.data));
+        }
       } catch (err) {
         console.warn("Sinkronisasi Supabase di Homepage menggunakan fallback data lokal:", err);
       }
@@ -94,8 +109,11 @@ export default function Home() {
           {/* Documentation Gallery & Lightbox */}
           <GallerySection galleryList={galleryList} />
 
-          {/* Module & Article Reader */}
-          <ArticlesSection articlesList={articlesList} />
+          {/* Berita & Kabar KKN */}
+          <NewsSection newsList={newsList} />
+
+          {/* Modul & Panduan Edukasi */}
+          <ModulSection modulesList={modulesList} />
 
           {/* Contact & Map Section */}
           <ContactSection villageInfo={villageInfo} />

@@ -24,9 +24,39 @@ export default function AdminPage() {
 
   const [prokerList, setProkerList] = useState([]);
   const [galleryList, setGalleryList] = useState([]);
-  const [articlesList, setArticlesList] = useState([]);
+  const [newsList, setNewsList] = useState([]);
+  const [modulesList, setModulesList] = useState([]);
   const [contactsList, setContactsList] = useState([]);
   const [teamList, setTeamList] = useState([]);
+
+  // Form State Berita
+  const [newNews, setNewNews] = useState({
+    title: '',
+    category: 'Liputan Proker',
+    author: 'Humas KKN Kelompok 3',
+    date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+    readTime: '3 menit',
+    summary: '',
+    content: '',
+    coverImage: 'https://images.unsplash.com/photo-1556740758-90de374c12ad?auto=format&fit=crop&w=800&q=80'
+  });
+  const [editingNewsId, setEditingNewsId] = useState(null);
+
+  // Form State Modul
+  const [newModul, setNewModul] = useState({
+    title: '',
+    category: 'Lingkungan & Pengolahan Limbah',
+    author: 'Tim KKN Kelompok 3',
+    date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+    pages: '',
+    fileSize: '',
+    fileUrl: '',
+    images: [],
+    summary: '',
+    content: '',
+    coverImage: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=800&q=80'
+  });
+  const [editingModulId, setEditingModulId] = useState(null);
 
   // Edit Mode State
   const [editingProkerId, setEditingProkerId] = useState(null);
@@ -37,7 +67,7 @@ export default function AdminPage() {
   const [newTeam, setNewTeam] = useState({
     name: '',
     role: '',
-    division: 'Badan Pengurus Harian',
+    division: 'Ketua',
     major: '',
     photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
     quote: '',
@@ -79,23 +109,37 @@ export default function AdminPage() {
       return;
     }
     try {
-      const [prokerRes, galleryRes, articlesRes, contactsRes, teamRes] = await Promise.all([
+      const [prokerRes, galleryRes, newsRes, modulesRes, contactsRes, teamRes] = await Promise.all([
         supabase.from('proker').select('*').order('created_at', { ascending: false }),
         supabase.from('gallery').select('*').order('created_at', { ascending: false }),
-        supabase.from('articles').select('*').order('created_at', { ascending: false }),
+        supabase.from('news').select('*').order('created_at', { ascending: false }),
+        supabase.from('modules').select('*').order('created_at', { ascending: true }),
         supabase.from('contacts').select('*').order('created_at', { ascending: false }),
         supabase.from('team_members').select('*').order('created_at', { ascending: true })
       ]);
 
       if (prokerRes.error) throw prokerRes.error;
       if (galleryRes.error) throw galleryRes.error;
-      if (articlesRes.error) throw articlesRes.error;
 
-      setProkerList(prokerRes.data || []);
-      setGalleryList(galleryRes.data || []);
-      setArticlesList(articlesRes.data || []);
-      setContactsList(contactsRes?.data || []);
-      if (teamRes?.data && teamRes.data.length > 0) setTeamList(teamRes.data);
+      const fetchedProker = prokerRes.data || [];
+      const fetchedGallery = galleryRes.data || [];
+      const fetchedNews = newsRes?.data || [];
+      const fetchedModules = modulesRes?.data || [];
+      const fetchedContacts = contactsRes?.data || [];
+      const fetchedTeam = teamRes?.data || [];
+
+      setProkerList(fetchedProker);
+      setGalleryList(fetchedGallery);
+      setNewsList(fetchedNews);
+      setModulesList(fetchedModules);
+      setContactsList(fetchedContacts);
+      setTeamList(fetchedTeam);
+
+      localStorage.setItem('kkn_proker_list', JSON.stringify(fetchedProker));
+      localStorage.setItem('kkn_gallery_list', JSON.stringify(fetchedGallery));
+      localStorage.setItem('kkn_news_list', JSON.stringify(fetchedNews));
+      localStorage.setItem('kkn_modules_list', JSON.stringify(fetchedModules));
+      localStorage.setItem('kkn_team_list', JSON.stringify(fetchedTeam));
     } catch (err) {
       console.error('Gagal mengambil data dari Supabase:', err);
       showToast('error', 'Gagal mengambil data dari Supabase: ' + (err.message || err));
@@ -109,22 +153,25 @@ export default function AdminPage() {
     try {
       const localProker = localStorage.getItem('kkn_proker_list');
       const localGallery = localStorage.getItem('kkn_gallery_list');
-      const localArticles = localStorage.getItem('kkn_articles_list');
+      const localNews = localStorage.getItem('kkn_news_list');
+      const localModules = localStorage.getItem('kkn_modules_list');
       const localTeam = localStorage.getItem('kkn_team_list');
 
       setProkerList(localProker ? JSON.parse(localProker) : (INITIAL_DATA.prokerList || []));
       setGalleryList(localGallery ? JSON.parse(localGallery) : (INITIAL_DATA.galleryList || []));
-      setArticlesList(localArticles ? JSON.parse(localArticles) : (INITIAL_DATA.articlesList || []));
+      setNewsList(localNews ? JSON.parse(localNews) : (INITIAL_DATA.newsList || []));
+      setModulesList(localModules ? JSON.parse(localModules) : (INITIAL_DATA.modulesList || []));
       setTeamList(localTeam ? JSON.parse(localTeam) : (INITIAL_DATA.teamMembers || []));
     } catch (e) {
       setProkerList(INITIAL_DATA.prokerList || []);
       setGalleryList(INITIAL_DATA.galleryList || []);
-      setArticlesList(INITIAL_DATA.articlesList || []);
+      setNewsList(INITIAL_DATA.newsList || []);
+      setModulesList(INITIAL_DATA.modulesList || []);
       setTeamList(INITIAL_DATA.teamMembers || []);
     }
   }, []);
 
-  // Auto-sync mutations to localStorage for instant reflect on Home & Anggota pages
+  // Auto-sync mutations to localStorage for instant reflect on Home page
   useEffect(() => {
     if (prokerList) localStorage.setItem('kkn_proker_list', JSON.stringify(prokerList));
   }, [prokerList]);
@@ -134,8 +181,12 @@ export default function AdminPage() {
   }, [galleryList]);
 
   useEffect(() => {
-    if (articlesList) localStorage.setItem('kkn_articles_list', JSON.stringify(articlesList));
-  }, [articlesList]);
+    if (newsList) localStorage.setItem('kkn_news_list', JSON.stringify(newsList));
+  }, [newsList]);
+
+  useEffect(() => {
+    if (modulesList) localStorage.setItem('kkn_modules_list', JSON.stringify(modulesList));
+  }, [modulesList]);
 
   useEffect(() => {
     if (teamList) localStorage.setItem('kkn_team_list', JSON.stringify(teamList));
@@ -391,13 +442,33 @@ export default function AdminPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // Delete Gallery Photo
+  const handleDeleteGallery = async (id) => {
+    if (!confirm('Apakah Anda yakin ingin menghapus foto galeri ini?')) return;
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { error } = await supabase.from('gallery').delete().eq('id', id);
+        if (error) throw error;
+        showToast('success', 'Foto galeri berhasil dihapus!');
+        await fetchAllData();
+      } catch (err) {
+        showToast('error', 'Gagal menghapus foto galeri: ' + (err.message || err));
+        return;
+      }
+    } else {
+      setGalleryList(prev => prev.filter(g => g.id !== id));
+      showToast('success', 'Foto galeri berhasil dihapus!');
+    }
+    if (editingGalleryId === id) resetGalleryForm();
+  };
+
   // Reset Team Form
   const resetTeamForm = () => {
     setEditingTeamId(null);
     setNewTeam({
       name: '',
       role: '',
-      division: 'Badan Pengurus Harian',
+      division: 'Ketua',
       major: '',
       photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
       quote: '',
@@ -476,10 +547,29 @@ export default function AdminPage() {
   // Start Editing Team Member
   const handleStartEditTeam = (item) => {
     setEditingTeamId(item.id);
+    
+    // Normalize division if it was legacy 'Badan Pengurus Harian' or empty
+    let initialDivision = item.division;
+    const validDivisions = ['Ketua', 'Wakil', 'Bendahara', 'Sekretaris', 'Humas', 'Acara', 'Konsumsi', 'Logtrans', 'PDD'];
+    
+    if (!initialDivision || !validDivisions.includes(initialDivision)) {
+      const lowerRole = (item.role || '').toLowerCase();
+      if (lowerRole.includes('wakil')) initialDivision = 'Wakil';
+      else if (lowerRole.includes('ketua')) initialDivision = 'Ketua';
+      else if (lowerRole.includes('sekretaris')) initialDivision = 'Sekretaris';
+      else if (lowerRole.includes('bendahara')) initialDivision = 'Bendahara';
+      else if (lowerRole.includes('humas')) initialDivision = 'Humas';
+      else if (lowerRole.includes('acara')) initialDivision = 'Acara';
+      else if (lowerRole.includes('konsumsi')) initialDivision = 'Konsumsi';
+      else if (lowerRole.includes('logtrans') || lowerRole.includes('logistik')) initialDivision = 'Logtrans';
+      else if (lowerRole.includes('pdd') || lowerRole.includes('desain') || lowerRole.includes('web')) initialDivision = 'PDD';
+      else initialDivision = 'Ketua';
+    }
+
     setNewTeam({
       name: item.name || '',
       role: item.role || '',
-      division: item.division || 'Badan Pengurus Harian',
+      division: initialDivision,
       major: item.major || '',
       photo: item.photo || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
       quote: item.quote || '',
@@ -707,53 +797,77 @@ export default function AdminPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         
         {/* Navigation Tabs */}
-        <div className="flex border-b border-slate-200 bg-white rounded-2xl p-2 border shadow-sm gap-2 animate-scale-in">
+        <div className="flex flex-wrap border-b border-slate-200 bg-white rounded-2xl p-2 border shadow-sm gap-2 animate-scale-in">
           <button
             onClick={() => { setActiveTab('proker'); resetProkerForm(); }}
-            className={`flex-1 py-3 px-4 text-xs sm:text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
+            className={`flex-1 min-w-[120px] py-3 px-4 text-xs sm:text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
               activeTab === 'proker'
                 ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-white shadow-md'
                 : 'text-slate-600 hover:text-brand-navy hover:bg-slate-50'
             }`}
           >
             <CheckCircle className="w-4 h-4" />
-            <span>Kelola Program Kerja ({prokerList.length})</span>
+            <span>Proker ({prokerList.length})</span>
           </button>
           
           <button
             onClick={() => { setActiveTab('gallery'); resetGalleryForm(); }}
-            className={`flex-1 py-3 px-4 text-xs sm:text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
+            className={`flex-1 min-w-[120px] py-3 px-4 text-xs sm:text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
               activeTab === 'gallery'
                 ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-white shadow-md'
                 : 'text-slate-600 hover:text-brand-navy hover:bg-slate-50'
             }`}
           >
             <ImageIcon className="w-4 h-4" />
-            <span>Kelola Galeri Foto ({galleryList.length})</span>
+            <span>Galeri ({galleryList.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('berita')}
+            className={`flex-1 min-w-[120px] py-3 px-4 text-xs sm:text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
+              activeTab === 'berita'
+                ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-white shadow-md'
+                : 'text-slate-600 hover:text-brand-navy hover:bg-slate-50'
+            }`}
+          >
+            <MessageSquare className="w-4 h-4" />
+            <span>Berita ({newsList.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('modul')}
+            className={`flex-1 min-w-[120px] py-3 px-4 text-xs sm:text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
+              activeTab === 'modul'
+                ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-white shadow-md'
+                : 'text-slate-600 hover:text-brand-navy hover:bg-slate-50'
+            }`}
+          >
+            <Save className="w-4 h-4" />
+            <span>Modul ({modulesList.length})</span>
           </button>
 
           <button
             onClick={() => { setActiveTab('team'); resetTeamForm(); }}
-            className={`flex-1 py-3 px-4 text-xs sm:text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
+            className={`flex-1 min-w-[120px] py-3 px-4 text-xs sm:text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
               activeTab === 'team'
                 ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-white shadow-md'
                 : 'text-slate-600 hover:text-brand-navy hover:bg-slate-50'
             }`}
           >
             <User className="w-4 h-4" />
-            <span>Anggota Tim ({teamList.length})</span>
+            <span>Anggota ({teamList.length})</span>
           </button>
 
           <button
             onClick={() => setActiveTab('contacts')}
-            className={`flex-1 py-3 px-4 text-xs sm:text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
+            className={`flex-1 min-w-[120px] py-3 px-4 text-xs sm:text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
               activeTab === 'contacts'
                 ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-white shadow-md'
                 : 'text-slate-600 hover:text-brand-navy hover:bg-slate-50'
             }`}
           >
-            <MessageSquare className="w-4 h-4" />
-            <span>Pesan & Masukan Warga ({contactsList.length})</span>
+            <Mail className="w-4 h-4" />
+            <span>Pesan ({contactsList.length})</span>
           </button>
         </div>
 
@@ -1064,7 +1178,433 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* TAB 3: CONTACT MESSAGES */}
+        {/* TAB 3: KELOLA BERITA */}
+        {activeTab === 'berita' && (
+          <div className="space-y-8 animate-fade-in-up">
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!newNews.title) return;
+                const payload = { ...newNews };
+
+                if (editingNewsId) {
+                  const { id: _id, ...updatePayload } = payload;
+                  if (isSupabaseConfigured && supabase) {
+                    try {
+                      const { error } = await supabase.from('news').update(updatePayload).eq('id', editingNewsId);
+                      if (error) throw error;
+                      showToast('success', `Berita diperbarui!`);
+                      await fetchAllData();
+                    } catch (err) { showToast('error', 'Gagal update berita: ' + (err.message || err)); return; }
+                  } else {
+                    setNewsList(prev => prev.map(n => n.id === editingNewsId ? { ...n, ...updatePayload } : n));
+                    showToast('success', 'Berita diperbarui!');
+                  }
+                  setEditingNewsId(null);
+                } else {
+                  const item = { ...payload, id: `news-${Date.now()}` };
+                  if (isSupabaseConfigured && supabase) {
+                    try {
+                      const { error } = await supabase.from('news').insert([item]);
+                      if (error) throw error;
+                      showToast('success', `Berita ditambahkan!`);
+                      await fetchAllData();
+                    } catch (err) { showToast('error', 'Gagal tambah berita: ' + (err.message || err)); return; }
+                  } else {
+                    setNewsList(prev => [item, ...prev]);
+                    showToast('success', 'Berita ditambahkan!');
+                  }
+                }
+                setNewNews({ title: '', category: 'Liputan Proker', author: 'Humas KKN Kelompok 3', date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }), readTime: '3 menit', summary: '', content: '', coverImage: 'https://images.unsplash.com/photo-1556740758-90de374c12ad?auto=format&fit=crop&w=800&q=80' });
+              }}
+              className="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-4"
+            >
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h2 className="text-base font-bold text-brand-gold uppercase tracking-wider flex items-center gap-2">
+                  {editingNewsId ? <><Pencil className="w-5 h-5" /><span>Edit Berita</span></> : <><Plus className="w-5 h-5" /><span>Tambah Berita Baru</span></>}
+                </h2>
+                {editingNewsId && (
+                  <button type="button" onClick={() => setEditingNewsId(null)} className="px-3 py-1 rounded-xl bg-slate-100 text-slate-600 text-xs font-bold flex items-center gap-1">
+                    <X className="w-4 h-4" /> Batal Edit
+                  </button>
+                )}
+              </div>
+
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-brand-navy mb-1">Judul Berita *</label>
+                  <input type="text" required placeholder="Judul berita..." value={newNews.title} onChange={e => setNewNews({...newNews, title: e.target.value})} className="w-full bg-slate-50 border border-slate-300 text-brand-navy text-xs sm:text-sm rounded-xl px-4 py-2.5 focus:border-brand-gold outline-none" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-brand-navy mb-1">Kategori</label>
+                  <select value={newNews.category} onChange={e => setNewNews({...newNews, category: e.target.value})} className="w-full bg-slate-50 border border-slate-300 text-brand-navy text-xs sm:text-sm rounded-xl px-4 py-2.5 focus:border-brand-gold outline-none">
+                    <option>Liputan Proker</option>
+                    <option>Kabar Desa</option>
+                    <option>Edukasi &amp; Lingkungan</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-brand-navy mb-1">Penulis</label>
+                  <input type="text" placeholder="Nama penulis..." value={newNews.author} onChange={e => setNewNews({...newNews, author: e.target.value})} className="w-full bg-slate-50 border border-slate-300 text-brand-navy text-xs sm:text-sm rounded-xl px-4 py-2.5 focus:border-brand-gold outline-none" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-brand-navy mb-1">Unggah Foto Cover (Opsional)</label>
+                  <input type="file" accept="image/*" onChange={(e) => handleImageFileChange(e, setNewNews)} className="w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:bg-amber-100 file:text-brand-gold font-bold" />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-brand-navy mb-1">Ringkasan / Summary *</label>
+                <textarea rows={2} required placeholder="Ringkasan singkat berita..." value={newNews.summary} onChange={e => setNewNews({...newNews, summary: e.target.value})} className="w-full bg-slate-50 border border-slate-300 text-brand-navy text-xs sm:text-sm rounded-xl px-4 py-2.5 focus:border-brand-gold outline-none" />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-brand-navy mb-1">Isi Berita Lengkap</label>
+                <textarea rows={5} placeholder="Tulis konten berita lengkap..." value={newNews.content} onChange={e => setNewNews({...newNews, content: e.target.value})} className="w-full bg-slate-50 border border-slate-300 text-brand-navy text-xs sm:text-sm rounded-xl px-4 py-2.5 focus:border-brand-gold outline-none font-mono" />
+              </div>
+
+              <button type="submit" disabled={isUploading} className="py-3 px-6 rounded-2xl bg-gradient-to-r from-brand-gold to-amber-600 text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-md transition-all active:scale-95">
+                <Save className="w-4 h-4" />
+                <span>{isUploading ? 'Uploading...' : editingNewsId ? 'Simpan Perubahan Berita' : 'Simpan Berita'}</span>
+              </button>
+            </form>
+
+            <div className="space-y-3">
+              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Daftar Berita Tersimpan ({newsList.length})</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {newsList.map((item) => (
+                  <div key={item.id} className="p-4 rounded-2xl bg-white border border-slate-200 flex items-center justify-between shadow-sm hover:shadow-md transition-all gap-3">
+                    <div className="flex items-center gap-3">
+                      <img src={item.coverImage || item.coverimage || 'https://images.unsplash.com/photo-1556740758-90de374c12ad?auto=format&fit=crop&w=400&q=80'} alt={item.title} className="w-14 h-14 rounded-xl object-cover border border-slate-200 flex-shrink-0" onError={(e) => { e.target.src = PLACEHOLDER_IMG; }} />
+                      <div>
+                        <h4 className="text-sm font-bold text-brand-navy line-clamp-1">{item.title}</h4>
+                        <span className="text-xs font-semibold text-brand-gold">{item.category} • {item.date}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <button onClick={() => { setEditingNewsId(item.id); setNewNews({ title: item.title || '', category: item.category || 'Liputan Proker', author: item.author || '', date: item.date || '', readTime: item.readTime || '3 menit', summary: item.summary || '', content: item.content || '', coverImage: item.coverImage || item.coverimage || '' }); window.scrollTo({top:0,behavior:'smooth'}); }} className="p-2.5 rounded-xl bg-amber-50 text-brand-gold hover:bg-amber-100 border border-amber-200 transition-colors" title="Edit"><Pencil className="w-4 h-4" /></button>
+                      <button onClick={async () => { if (!confirm('Hapus berita ini?')) return; if (isSupabaseConfigured && supabase) { try { const { error } = await supabase.from('news').delete().eq('id', item.id); if (error) throw error; showToast('success', 'Berita dihapus!'); await fetchAllData(); } catch (err) { showToast('error', 'Gagal hapus: ' + (err.message || err)); } } else { setNewsList(prev => prev.filter(n => n.id !== item.id)); showToast('success', 'Berita dihapus!'); } }} className="p-2.5 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 transition-colors" title="Hapus"><Trash2 className="w-4 h-4" /></button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 4: KELOLA MODUL EDUKASI */}
+        {activeTab === 'modul' && (
+          <div className="space-y-8 animate-fade-in-up">
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!newModul.title) return;
+                const payload = { ...newModul };
+
+                if (editingModulId) {
+                  const { id: _id, ...updatePayload } = payload;
+                  if (updatePayload.images && Array.isArray(updatePayload.images)) {
+                    updatePayload.images = JSON.stringify(updatePayload.images);
+                  }
+                  if (isSupabaseConfigured && supabase) {
+                    try {
+                      let { error } = await supabase.from('modules').update(updatePayload).eq('id', editingModulId);
+                      if (error && error.message && (error.message.includes('fileUrl') || error.message.includes('images') || error.message.includes('schema cache'))) {
+                        const fallback = { ...updatePayload };
+                        if (error.message.includes('fileUrl')) {
+                          fallback.fileurl = updatePayload.fileUrl;
+                          delete fallback.fileUrl;
+                        }
+                        if (error.message.includes('images')) {
+                          delete fallback.images;
+                        }
+                        const res = await supabase.from('modules').update(fallback).eq('id', editingModulId);
+                        error = res.error;
+                      }
+                      if (error) throw error;
+                      showToast('success', 'Modul diperbarui!');
+                      await fetchAllData();
+                    } catch (err) { showToast('error', 'Gagal update modul: ' + (err.message || err)); return; }
+                  } else {
+                    setModulesList(prev => prev.map(m => m.id === editingModulId ? { ...m, ...payload } : m));
+                    showToast('success', 'Modul diperbarui!');
+                  }
+                  setEditingModulId(null);
+                } else {
+                  const item = { ...payload, id: `mod-${Date.now()}` };
+                  const insertItem = { ...item };
+                  if (insertItem.images && Array.isArray(insertItem.images)) {
+                    insertItem.images = JSON.stringify(insertItem.images);
+                  }
+                  if (isSupabaseConfigured && supabase) {
+                    try {
+                      let { error } = await supabase.from('modules').insert([insertItem]);
+                      if (error && error.message && (error.message.includes('fileUrl') || error.message.includes('images') || error.message.includes('schema cache'))) {
+                        const fallback = { ...insertItem };
+                        if (error.message.includes('fileUrl')) {
+                          fallback.fileurl = insertItem.fileUrl;
+                          delete fallback.fileUrl;
+                        }
+                        if (error.message.includes('images')) {
+                          delete fallback.images;
+                        }
+                        const res = await supabase.from('modules').insert([fallback]);
+                        error = res.error;
+                      }
+                      if (error) throw error;
+                      showToast('success', 'Modul ditambahkan!');
+                      await fetchAllData();
+                    } catch (err) { showToast('error', 'Gagal tambah modul: ' + (err.message || err)); return; }
+                  } else {
+                    setModulesList(prev => [item, ...prev]);
+                    showToast('success', 'Modul ditambahkan!');
+                  }
+                }
+                setNewModul({ title: '', category: 'Lingkungan & Pengolahan Limbah', author: 'Tim KKN Kelompok 3', date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }), pages: '', fileSize: '', fileUrl: '', images: [], summary: '', content: '', coverImage: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=800&q=80' });
+              }}
+              className="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-4"
+            >
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h2 className="text-base font-bold text-brand-gold uppercase tracking-wider flex items-center gap-2">
+                  {editingModulId ? <><Pencil className="w-5 h-5" /><span>Edit Modul</span></> : <><Plus className="w-5 h-5" /><span>Tambah Modul Edukasi Baru</span></>}
+                </h2>
+                {editingModulId && (
+                  <button type="button" onClick={() => { setEditingModulId(null); setNewModul({ title: '', category: 'Lingkungan & Pengolahan Limbah', author: 'Tim KKN Kelompok 3', date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }), pages: '', fileSize: '', fileUrl: '', images: [], summary: '', content: '', coverImage: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=800&q=80' }); }} className="px-3 py-1 rounded-xl bg-slate-100 text-slate-600 text-xs font-bold flex items-center gap-1">
+                    <X className="w-4 h-4" /> Batal Edit
+                  </button>
+                )}
+              </div>
+
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-brand-navy mb-1">Judul Modul *</label>
+                  <input type="text" required placeholder="Judul panduan / modul..." value={newModul.title} onChange={e => setNewModul({...newModul, title: e.target.value})} className="w-full bg-slate-50 border border-slate-300 text-brand-navy text-xs sm:text-sm rounded-xl px-4 py-2.5 focus:border-brand-gold outline-none" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-brand-navy mb-1">Kategori Modul</label>
+                  <select value={newModul.category} onChange={e => setNewModul({...newModul, category: e.target.value})} className="w-full bg-slate-50 border border-slate-300 text-brand-navy text-xs sm:text-sm rounded-xl px-4 py-2.5 focus:border-brand-gold outline-none">
+                    <option>Lingkungan &amp; Pengolahan Limbah</option>
+                    <option>Kesehatan &amp; Gizi</option>
+                    <option>Ekonomi &amp; UMKM</option>
+                    <option>Pendidikan &amp; Literasi</option>
+                    <option>Teknologi &amp; Digital</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-brand-navy mb-1">Penyusun Modul</label>
+                  <input type="text" placeholder="Nama tim penyusun..." value={newModul.author} onChange={e => setNewModul({...newModul, author: e.target.value})} className="w-full bg-slate-50 border border-slate-300 text-brand-navy text-xs sm:text-sm rounded-xl px-4 py-2.5 focus:border-brand-gold outline-none" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-brand-navy mb-1">Jumlah Halaman</label>
+                  <input type="text" placeholder="Contoh: 12 Halaman" value={newModul.pages} onChange={e => setNewModul({...newModul, pages: e.target.value})} className="w-full bg-slate-50 border border-slate-300 text-brand-navy text-xs sm:text-sm rounded-xl px-4 py-2.5 focus:border-brand-gold outline-none" />
+                </div>
+              </div>
+
+              {/* Upload Lembar Halaman Modul (WebP / JPG / PNG) */}
+              <div className="p-4 rounded-2xl bg-amber-50/60 border border-amber-200/80 space-y-3">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div>
+                    <label className="block text-xs font-bold text-brand-navy">
+                      📖 Unggah Lembar Halaman Modul (Gambar .webp / .png / .jpg)
+                    </label>
+                    <p className="text-[11px] text-slate-500 font-medium">
+                      Bisa pilih beberapa file sekaligus. Gambar akan langsung tampil sebagai <strong>Slide Booklet Interaktif</strong> di web.
+                    </p>
+                  </div>
+                  {newModul.images?.length > 0 && (
+                    <span className="px-3 py-1 text-xs font-extrabold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                      Total: {newModul.images.length} Lembar Terunggah
+                    </span>
+                  )}
+                </div>
+
+                <input
+                  type="file"
+                  accept="image/*,.webp,.png,.jpg,.jpeg"
+                  multiple
+                  onChange={async (e) => {
+                    const files = Array.from(e.target.files || []);
+                    if (files.length === 0) return;
+                    setIsUploading(true);
+                    try {
+                      const uploadedUrls = [];
+                      for (const file of files) {
+                        const url = await uploadImage(file);
+                        if (url) uploadedUrls.push(url);
+                      }
+                      setNewModul(prev => {
+                        const updatedImages = [...(prev.images || []), ...uploadedUrls];
+                        return {
+                          ...prev,
+                          images: updatedImages,
+                          pages: `${updatedImages.length} Halaman`,
+                          coverImage: prev.coverImage && !prev.coverImage.includes('unsplash') ? prev.coverImage : updatedImages[0]
+                        };
+                      });
+                      showToast('success', `${uploadedUrls.length} lembar halaman modul berhasil diunggah!`);
+                    } catch (err) {
+                      console.error("Upload lembar error:", err);
+                      showToast('error', 'Gagal upload gambar lembar: ' + (err.message || err));
+                    } finally {
+                      setIsUploading(false);
+                    }
+                  }}
+                  className="w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:bg-amber-100 file:text-brand-gold font-bold hover:file:bg-amber-200 cursor-pointer"
+                />
+
+                {/* Thumbnails of Uploaded Pages */}
+                {newModul.images?.length > 0 && (
+                  <div className="space-y-2 pt-2 border-t border-amber-200/60">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-700">Daftar Lembar Slide:</span>
+                      <button
+                        type="button"
+                        onClick={() => setNewModul(prev => ({ ...prev, images: [], pages: '' }))}
+                        className="text-[11px] font-bold text-red-600 hover:underline"
+                      >
+                        Hapus Semua Lembar
+                      </button>
+                    </div>
+
+                    <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin">
+                      {newModul.images.map((imgUrl, i) => (
+                        <div key={i} className="relative w-16 h-20 rounded-xl overflow-hidden border-2 border-amber-300 shadow-sm flex-shrink-0 group">
+                          <img src={imgUrl} alt={`Hal ${i + 1}`} className="w-full h-full object-cover" />
+                          <span className="absolute bottom-0 inset-x-0 bg-slate-900/85 text-white text-[9px] font-bold text-center py-0.5">
+                            Hal {i + 1}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setNewModul(prev => {
+                                const filtered = prev.images.filter((_, idx) => idx !== i);
+                                return {
+                                  ...prev,
+                                  images: filtered,
+                                  pages: `${filtered.length} Halaman`
+                                };
+                              });
+                            }}
+                            className="absolute top-1 right-1 p-1 rounded-full bg-red-600 text-white shadow-md transition-all hover:scale-110"
+                            title="Hapus Halaman Ini"
+                          >
+                            <X className="w-2.5 h-2.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Upload PDF Modul (Opsional) */}
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+                <label className="block text-xs font-bold text-brand-navy">
+                  Unggah Dokumen PDF Asli (.pdf) — Opsional untuk Tombol Unduh
+                </label>
+                <input
+                  type="file"
+                  accept=".pdf,application/pdf"
+                  onChange={async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    setIsUploading(true);
+                    try {
+                      const sizeInMB = (file.size / (1024 * 1024)).toFixed(1);
+                      const formattedSize = `${sizeInMB} MB (PDF)`;
+                      const url = await uploadImage(file);
+                      if (url) {
+                        setNewModul(prev => ({
+                          ...prev,
+                          fileUrl: url,
+                          fileSize: prev.fileSize || formattedSize
+                        }));
+                        showToast('success', 'File PDF modul berhasil diunggah!');
+                      }
+                    } catch (err) {
+                      console.error("Upload PDF error:", err);
+                      showToast('error', 'Gagal mengunggah file PDF: ' + (err.message || err));
+                    } finally {
+                      setIsUploading(false);
+                    }
+                  }}
+                  className="w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:bg-slate-200 file:text-slate-700 font-bold hover:file:bg-slate-300 cursor-pointer"
+                />
+                {newModul.fileUrl && (
+                  <div className="text-xs font-semibold text-emerald-700 bg-emerald-50 p-2.5 rounded-xl border border-emerald-200 flex items-center justify-between gap-2">
+                    <span className="truncate">✅ File PDF terhubung: <strong className="font-mono">{newModul.fileSize || 'PDF'}</strong></span>
+                    <a href={newModul.fileUrl} target="_blank" rel="noreferrer" className="text-emerald-800 underline font-bold whitespace-nowrap hover:text-emerald-950">
+                      Buka PDF &rarr;
+                    </a>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-brand-navy mb-1">Ringkasan Modul *</label>
+                <textarea rows={2} required placeholder="Deskripsi singkat isi modul..." value={newModul.summary} onChange={e => setNewModul({...newModul, summary: e.target.value})} className="w-full bg-slate-50 border border-slate-300 text-brand-navy text-xs sm:text-sm rounded-xl px-4 py-2.5 focus:border-brand-gold outline-none" />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-brand-navy mb-1">Isi Konten Modul Lengkap (Opsional untuk Dibaca di Web)</label>
+                <textarea rows={5} placeholder="Tulis ringkasan bab / isi panduan modul..." value={newModul.content} onChange={e => setNewModul({...newModul, content: e.target.value})} className="w-full bg-slate-50 border border-slate-300 text-brand-navy text-xs sm:text-sm rounded-xl px-4 py-2.5 focus:border-brand-gold outline-none font-mono" />
+              </div>
+
+              <button type="submit" disabled={isUploading} className="py-3 px-6 rounded-2xl bg-gradient-to-r from-brand-gold to-amber-600 text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-md transition-all active:scale-95">
+                <Save className="w-4 h-4" />
+                <span>{isUploading ? 'Mengunggah File...' : editingModulId ? 'Simpan Perubahan Modul' : 'Simpan Modul Baru'}</span>
+              </button>
+            </form>
+
+            <div className="space-y-3">
+              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Daftar Modul Tersimpan ({modulesList.length})</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {modulesList.map((item) => (
+                  <div key={item.id} className="p-4 rounded-2xl bg-white border border-slate-200 flex items-center justify-between shadow-sm hover:shadow-md transition-all gap-3">
+                    <div>
+                      <h4 className="text-sm font-bold text-brand-navy line-clamp-1">{item.title}</h4>
+                      <span className="text-xs font-semibold text-brand-gold">{item.category} • {item.pages || 'PDF'}</span>
+                      {item.fileUrl && <span className="ml-2 text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md font-bold">PDF Ready</span>}
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <button onClick={() => {
+                        let parsedImgs = [];
+                        if (Array.isArray(item.images)) parsedImgs = item.images;
+                        else if (typeof item.images === 'string' && item.images.startsWith('[')) {
+                          try { parsedImgs = JSON.parse(item.images); } catch(e) {}
+                        }
+                        setEditingModulId(item.id);
+                        setNewModul({
+                          title: item.title || '',
+                          category: item.category || 'Lingkungan & Pengolahan Limbah',
+                          author: item.author || '',
+                          date: item.date || '',
+                          pages: item.pages || '',
+                          fileSize: item.fileSize || item.filesize || '',
+                          fileUrl: item.fileUrl || item.fileurl || '',
+                          images: parsedImgs,
+                          summary: item.summary || '',
+                          content: item.content || '',
+                          coverImage: item.coverImage || item.coverimage || ''
+                        });
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }} className="p-2.5 rounded-xl bg-amber-50 text-brand-gold hover:bg-amber-100 border border-amber-200 transition-colors" title="Edit"><Pencil className="w-4 h-4" /></button>
+                      <button onClick={async () => { if (!confirm('Hapus modul ini?')) return; if (isSupabaseConfigured && supabase) { try { const { error } = await supabase.from('modules').delete().eq('id', item.id); if (error) throw error; showToast('success', 'Modul dihapus!'); await fetchAllData(); } catch (err) { showToast('error', 'Gagal hapus: ' + (err.message || err)); } } else { setModulesList(prev => prev.filter(m => m.id !== item.id)); showToast('success', 'Modul dihapus!'); } }} className="p-2.5 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 transition-colors" title="Hapus"><Trash2 className="w-4 h-4" /></button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 5: CONTACT MESSAGES */}
         {activeTab === 'contacts' && (
           <div className="space-y-6 animate-fade-in-up">
             <div className="flex items-center justify-between border-b border-slate-200 pb-4">
@@ -1129,7 +1669,7 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* TAB 4: KELOLA ANGGOTA TIM */}
+        {/* TAB 6: KELOLA ANGGOTA TIM */}
         {activeTab === 'team' && (
           <div className="space-y-8 animate-fade-in-up">
             
@@ -1191,9 +1731,12 @@ export default function AdminPage() {
                     onChange={(e) => setNewTeam({ ...newTeam, division: e.target.value })}
                     className="w-full bg-slate-50 border border-slate-300 text-brand-navy text-xs sm:text-sm rounded-xl px-4 py-2.5 focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/20 outline-none transition-all font-semibold"
                   >
-                    <option value="Badan Pengurus Harian">Badan Pengurus Harian</option>
-                    <option value="Acara">Acara</option>
+                    <option value="Ketua">Ketua</option>
+                    <option value="Wakil">Wakil</option>
+                    <option value="Bendahara">Bendahara</option>
+                    <option value="Sekretaris">Sekretaris</option>
                     <option value="Humas">Humas</option>
+                    <option value="Acara">Acara</option>
                     <option value="Konsumsi">Konsumsi</option>
                     <option value="Logtrans">Logtrans</option>
                     <option value="PDD">PDD</option>
@@ -1327,7 +1870,14 @@ export default function AdminPage() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {teamList.map((item) => (
+                {[...teamList].sort((a, b) => {
+                  const divOrder = ['Ketua', 'Wakil', 'Bendahara', 'Sekretaris', 'Humas', 'Acara', 'Konsumsi', 'Logtrans', 'PDD'];
+                  const rankA = divOrder.indexOf(a.division);
+                  const rankB = divOrder.indexOf(b.division);
+                  const safeA = rankA !== -1 ? rankA : 999;
+                  const safeB = rankB !== -1 ? rankB : 999;
+                  return safeA - safeB;
+                }).map((item) => (
                   <div key={item.id} className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all space-y-3 relative group flex flex-col justify-between">
                     <div>
                       <div className="flex items-center gap-3 mb-3">
