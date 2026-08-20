@@ -17,8 +17,8 @@ export default function SplashScreen({ onFinish, duration = 3800 }) {
 
     const processFrame = () => {
       if (video && !video.paused && !video.ended && video.videoWidth && video.videoHeight) {
-        // Scale down canvas for 10x faster pixel processing
-        const targetWidth = Math.min(video.videoWidth, 480);
+        // High quality processing resolution
+        const targetWidth = Math.min(video.videoWidth, 960);
         const scale = targetWidth / video.videoWidth;
         const targetHeight = Math.round(video.videoHeight * scale);
 
@@ -67,8 +67,8 @@ export default function SplashScreen({ onFinish, duration = 3800 }) {
 
   return (
     <div
-      className={`fixed inset-0 z-[9999] flex items-center justify-center bg-slate-50/95 backdrop-blur-md overflow-hidden transition-all duration-700 ease-in-out ${
-        isFading ? 'opacity-0 pointer-events-none' : 'opacity-100'
+      className={`fixed inset-0 z-[9999] flex items-center justify-center bg-slate-50/98 backdrop-blur-xl overflow-hidden transition-all duration-700 ease-in-out ${
+        isFading ? 'opacity-0 pointer-events-none scale-105' : 'opacity-100 scale-100'
       }`}
     >
       {/* Hidden Source Video */}
@@ -84,11 +84,14 @@ export default function SplashScreen({ onFinish, duration = 3800 }) {
         <source src="/logo/transparanKKN.mp4" type="video/mp4" />
       </video>
 
-      {/* Rendered Transparent Canvas */}
-      <div className="relative w-full max-w-2xl aspect-video flex items-center justify-center p-4">
+      {/* Decorative Glow Orb */}
+      <div className="absolute w-[600px] h-[600px] bg-gradient-to-tr from-amber-300/30 to-blue-300/20 rounded-full blur-3xl pointer-events-none animate-pulse" />
+
+      {/* Rendered Transparent Canvas — Extra Large & High Definition */}
+      <div className="relative w-[92vw] max-w-4xl sm:max-w-5xl aspect-video flex items-center justify-center p-2 sm:p-6 transition-transform duration-500">
         <canvas
           ref={canvasRef}
-          className="w-full h-full object-contain pointer-events-none filter drop-shadow-[0_12px_32px_rgba(222,146,39,0.35)]"
+          className="w-full h-full object-contain pointer-events-none filter drop-shadow-[0_16px_48px_rgba(222,146,39,0.45)] transform scale-110 sm:scale-125"
         />
       </div>
     </div>

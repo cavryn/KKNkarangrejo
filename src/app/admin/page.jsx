@@ -734,10 +734,17 @@ export default function AdminPage() {
   // Loading state saat pertama kali fetch data
   if (isLoadingData) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="text-center space-y-4 animate-fade-in-up">
-          <div className="w-12 h-12 border-4 border-brand-gold border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-sm font-bold text-slate-600">Memuat data dari Supabase...</p>
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <div className="text-center space-y-5 animate-fade-in-up p-8 rounded-3xl bg-white border border-slate-200 shadow-xl max-w-sm w-full">
+          <div className="relative w-20 h-20 mx-auto flex items-center justify-center">
+            <div className="absolute inset-0 rounded-full border-4 border-amber-100 animate-ping opacity-50" />
+            <div className="w-20 h-20 border-4 border-amber-200 border-t-brand-gold rounded-full animate-spin" />
+            <Shield className="w-8 h-8 text-brand-gold absolute" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-base font-extrabold text-brand-navy">Memuat Panel Admin</h3>
+            <p className="text-xs font-semibold text-slate-400">Menghubungkan ke Supabase Live Database...</p>
+          </div>
         </div>
       </div>
     );

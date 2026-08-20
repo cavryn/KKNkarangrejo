@@ -6,7 +6,12 @@ import Navbar from '@/components/Navbar';
 import HeroSection from '@/components/HeroSection';
 import AboutSection from '@/components/AboutSection';
 
-const LOADING_SPINNER = <div className="py-20 flex items-center justify-center"><div className="w-8 h-8 border-4 border-brand-gold/30 border-t-brand-gold rounded-full animate-spin" /></div>;
+const LOADING_SPINNER = (
+  <div className="py-24 flex flex-col items-center justify-center space-y-3">
+    <div className="w-14 h-14 border-4 border-amber-200/50 border-t-brand-gold rounded-full animate-spin shadow-gold" />
+    <span className="text-xs font-bold text-slate-400 animate-pulse">Memuat konten...</span>
+  </div>
+);
 
 // Lazy load below-fold sections to reduce initial JS bundle
 const ProkerSection = dynamic(() => import('@/components/ProkerSection'), { loading: () => LOADING_SPINNER });
