@@ -7,6 +7,8 @@ export default function ModulSection({ modulesList = [] }) {
   const [activeModuleModal, setActiveModuleModal] = useState(null);
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
   const sectionRef = useRef(null);
 
   const PLACEHOLDER_IMG = 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=800&q=80';
@@ -45,6 +47,22 @@ export default function ModulSection({ modulesList = [] }) {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [activeModuleModal]);
+
+  const minSwipeDistance = 45;
+  const handleTouchStart = (e) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+  const handleTouchMove = (e) => setTouchEnd(e.targetTouches[0].clientX);
+  const handleTouchEnd = (pagesLength) => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    if (distance > minSwipeDistance) {
+      setCurrentPageIndex(prev => Math.min(prev + 1, pagesLength - 1));
+    } else if (distance < -minSwipeDistance) {
+      setCurrentPageIndex(prev => Math.max(prev - 1, 0));
+    }
+  };
 
   const getModulePages = (modul) => {
     if (!modul) return [];
@@ -226,15 +244,21 @@ export default function ModulSection({ modulesList = [] }) {
                 </div>
               </div>
 
-              {/* Main Viewer Stage */}
-              <div className="relative flex-1 bg-slate-100 flex items-center justify-center overflow-hidden min-h-[360px] sm:min-h-[500px] p-2 sm:p-6">
+              {/* Main Viewer Stage with Touch Swipe */}
+              <div 
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={() => handleTouchEnd(pages.length)}
+                className="relative flex-1 bg-slate-900/90 flex items-center justify-center overflow-hidden min-h-[340px] sm:min-h-[500px] p-2 sm:p-6 touch-pan-y"
+              >
                 
                 {/* Page Image */}
-                <div className="relative max-w-full max-h-[70vh] rounded-2xl overflow-hidden shadow-2xl border border-slate-300 bg-white flex items-center justify-center">
+                <div className="relative max-w-full max-h-[62vh] sm:max-h-[70vh] rounded-2xl overflow-hidden shadow-2xl border border-slate-700 bg-white flex items-center justify-center">
                   <img
                     src={currentPage}
                     alt={`${activeModuleModal.title} - Halaman ${currentPageIndex + 1}`}
-                    className="max-h-[68vh] w-auto object-contain select-none"
+                    className="max-h-[60vh] sm:max-h-[68vh] w-auto object-contain select-none pointer-events-none"
+                    draggable={false}
                   />
                 </div>
 
@@ -292,44 +316,45 @@ export default function ModulSection({ modulesList = [] }) {
                 )}
 
                 {/* Footer Controls */}
-                <div className="flex items-center justify-between gap-3 pt-1">
-                  <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                  <div className="flex items-center gap-1.5 sm:gap-2">
                     <button
                       disabled={currentPageIndex === 0}
                       onClick={() => setCurrentPageIndex(prev => Math.max(prev - 1, 0))}
-                      className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-amber-100 disabled:opacity-30 text-brand-navy font-bold text-xs flex items-center gap-1 transition-all"
+                      className="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-slate-100 hover:bg-amber-100 disabled:opacity-30 text-brand-navy font-bold text-xs flex items-center gap-1 transition-all"
                     >
                       <ChevronLeft className="w-4 h-4" />
-                      <span>Sebelumnya</span>
+                      <span className="hidden xs:inline sm:inline">Sebelumnya</span>
                     </button>
 
                     <button
                       disabled={currentPageIndex === pages.length - 1}
                       onClick={() => setCurrentPageIndex(prev => Math.min(prev + 1, pages.length - 1))}
-                      className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-amber-100 disabled:opacity-30 text-brand-navy font-bold text-xs flex items-center gap-1 transition-all"
+                      className="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-slate-100 hover:bg-amber-100 disabled:opacity-30 text-brand-navy font-bold text-xs flex items-center gap-1 transition-all"
                     >
-                      <span>Berikutnya</span>
+                      <span className="hidden xs:inline sm:inline">Berikutnya</span>
                       <ChevronRight className="w-4 h-4" />
                     </button>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 sm:gap-2">
                     {(activeModuleModal.fileUrl || activeModuleModal.fileurl) && (
                       <a
                         href={activeModuleModal.fileUrl || activeModuleModal.fileurl}
                         target="_blank"
                         rel="noreferrer"
                         download
-                        className="px-4 py-2 rounded-xl bg-gradient-to-r from-brand-gold to-amber-600 hover:from-amber-600 hover:to-brand-gold text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all"
+                        className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-gradient-to-r from-brand-gold to-amber-600 hover:from-amber-600 hover:to-brand-gold text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all"
                       >
                         <Download className="w-3.5 h-3.5" />
-                        <span>Unduh PDF Lengkap</span>
+                        <span className="hidden sm:inline">Unduh PDF Lengkap</span>
+                        <span className="sm:hidden">Unduh PDF</span>
                       </a>
                     )}
 
                     <button
                       onClick={() => { setActiveModuleModal(null); setIsFullscreen(false); }}
-                      className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-all"
+                      className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-all"
                     >
                       Tutup
                     </button>
