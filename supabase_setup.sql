@@ -43,8 +43,11 @@ CREATE TABLE IF NOT EXISTS public.news (
   summary TEXT,
   "coverImage" TEXT,
   content TEXT,
+  link TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+ALTER TABLE public.news ADD COLUMN IF NOT EXISTS link TEXT;
 
 -- Tabel Modul & Panduan Edukasi (BARU - menggantikan articles)
 CREATE TABLE IF NOT EXISTS public.modules (

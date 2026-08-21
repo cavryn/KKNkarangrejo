@@ -32,12 +32,12 @@ export default function AdminPage() {
   // Form State Berita
   const [newNews, setNewNews] = useState({
     title: '',
-    category: 'Liputan Proker',
     author: 'Humas KKN Kelompok 3',
     date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
     readTime: '3 menit',
     summary: '',
     content: '',
+    link: '',
     coverImage: 'https://images.unsplash.com/photo-1556740758-90de374c12ad?auto=format&fit=crop&w=800&q=80'
   });
   const [editingNewsId, setEditingNewsId] = useState(null);
@@ -1214,7 +1214,7 @@ export default function AdminPage() {
                     showToast('success', 'Berita ditambahkan!');
                   }
                 }
-                setNewNews({ title: '', category: 'Liputan Proker', author: 'Humas KKN Kelompok 3', date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }), readTime: '3 menit', summary: '', content: '', coverImage: 'https://images.unsplash.com/photo-1556740758-90de374c12ad?auto=format&fit=crop&w=800&q=80' });
+                setNewNews({ title: '', author: 'Humas KKN Kelompok 3', date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }), readTime: '3 menit', summary: '', content: '', link: '', coverImage: 'https://images.unsplash.com/photo-1556740758-90de374c12ad?auto=format&fit=crop&w=800&q=80' });
               }}
               className="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-4"
             >
@@ -1235,12 +1235,8 @@ export default function AdminPage() {
                   <input type="text" required placeholder="Judul berita..." value={newNews.title} onChange={e => setNewNews({...newNews, title: e.target.value})} className="w-full bg-slate-50 border border-slate-300 text-brand-navy text-xs sm:text-sm rounded-xl px-4 py-2.5 focus:border-brand-gold outline-none" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-brand-navy mb-1">Kategori</label>
-                  <select value={newNews.category} onChange={e => setNewNews({...newNews, category: e.target.value})} className="w-full bg-slate-50 border border-slate-300 text-brand-navy text-xs sm:text-sm rounded-xl px-4 py-2.5 focus:border-brand-gold outline-none">
-                    <option>Liputan Proker</option>
-                    <option>Kabar Desa</option>
-                    <option>Edukasi &amp; Lingkungan</option>
-                  </select>
+                  <label className="block text-xs font-bold text-brand-navy mb-1">Link Berita (Opsional)</label>
+                  <input type="url" placeholder="https://..." value={newNews.link} onChange={e => setNewNews({...newNews, link: e.target.value})} className="w-full bg-slate-50 border border-slate-300 text-brand-navy text-xs sm:text-sm rounded-xl px-4 py-2.5 focus:border-brand-gold outline-none" />
                 </div>
               </div>
 
@@ -1280,11 +1276,11 @@ export default function AdminPage() {
                       <img src={item.coverImage || item.coverimage || 'https://images.unsplash.com/photo-1556740758-90de374c12ad?auto=format&fit=crop&w=400&q=80'} alt={item.title} className="w-14 h-14 rounded-xl object-cover border border-slate-200 flex-shrink-0" onError={(e) => { e.target.src = PLACEHOLDER_IMG; }} />
                       <div>
                         <h4 className="text-sm font-bold text-brand-navy line-clamp-1">{item.title}</h4>
-                        <span className="text-xs font-semibold text-brand-gold">{item.category} • {item.date}</span>
+                        <span className="text-xs font-semibold text-brand-gold">{item.date}</span>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      <button onClick={() => { setEditingNewsId(item.id); setNewNews({ title: item.title || '', category: item.category || 'Liputan Proker', author: item.author || '', date: item.date || '', readTime: item.readTime || '3 menit', summary: item.summary || '', content: item.content || '', coverImage: item.coverImage || item.coverimage || '' }); window.scrollTo({top:0,behavior:'smooth'}); }} className="p-2.5 rounded-xl bg-amber-50 text-brand-gold hover:bg-amber-100 border border-amber-200 transition-colors" title="Edit"><Pencil className="w-4 h-4" /></button>
+                      <button onClick={() => { setEditingNewsId(item.id); setNewNews({ title: item.title || '', author: item.author || '', date: item.date || '', readTime: item.readTime || '3 menit', summary: item.summary || '', content: item.content || '', link: item.link || '', coverImage: item.coverImage || item.coverimage || '' }); window.scrollTo({top:0,behavior:'smooth'}); }} className="p-2.5 rounded-xl bg-amber-50 text-brand-gold hover:bg-amber-100 border border-amber-200 transition-colors" title="Edit"><Pencil className="w-4 h-4" /></button>
                       <button onClick={async () => { if (!confirm('Hapus berita ini?')) return; if (isSupabaseConfigured && supabase) { try { const { error } = await supabase.from('news').delete().eq('id', item.id); if (error) throw error; showToast('success', 'Berita dihapus!'); await fetchAllData(); } catch (err) { showToast('error', 'Gagal hapus: ' + (err.message || err)); } } else { setNewsList(prev => prev.filter(n => n.id !== item.id)); showToast('success', 'Berita dihapus!'); } }} className="p-2.5 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 transition-colors" title="Hapus"><Trash2 className="w-4 h-4" /></button>
                     </div>
                   </div>
