@@ -175,7 +175,7 @@ export default function ProkerSection({ prokerList }) {
           <div className="relative w-full max-w-2xl bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-2xl my-8">
             
             {/* Modal Image Header */}
-            <div className="relative h-64 w-full">
+            <div className="relative h-80 w-full">
               <Image
                 src={activeModalProker.image || PLACEHOLDER_IMG}
                 alt={activeModalProker.title}
@@ -207,16 +207,6 @@ export default function ProkerSection({ prokerList }) {
               </div>
 
               <div className="space-y-4 text-sm text-slate-700 leading-relaxed">
-                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-                  <span className="text-xs font-bold text-brand-gold uppercase tracking-wider block mb-1">Tujuan Program</span>
-                  <p className="text-brand-navy font-medium">{activeModalProker.objective}</p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-                  <span className="text-xs font-bold text-brand-gold uppercase tracking-wider block mb-1">Sasaran Peserta / Warga</span>
-                  <p className="text-brand-navy font-medium">{activeModalProker.target}</p>
-                </div>
-
                 <div>
                   <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Deskripsi Lengkap</span>
                   <p>{activeModalProker.description}</p>
@@ -224,7 +214,7 @@ export default function ProkerSection({ prokerList }) {
 
                 {activeModalProker.impact && (
                   <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200">
-                    <span className="text-xs font-bold text-brand-gold uppercase tracking-wider block mb-1">Dampak & Capaian Result</span>
+                    <span className="text-xs font-bold text-brand-gold uppercase tracking-wider block mb-1">Dampak &amp; Capaian Result</span>
                     <p className="text-brand-navy font-medium">{activeModalProker.impact}</p>
                   </div>
                 )}
