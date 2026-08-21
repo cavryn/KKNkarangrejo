@@ -1,14 +1,13 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { BookOpen, Download, ArrowRight, X, FileText, CheckCircle2, ChevronLeft, ChevronRight, Maximize2, Layers } from 'lucide-react';
+import { BookOpen, Download, X, FileText, Layers, ZoomIn, ZoomOut, ArrowUp } from 'lucide-react';
 
 export default function ModulSection({ modulesList = [] }) {
   const [activeModuleModal, setActiveModuleModal] = useState(null);
-  const [currentPageIndex, setCurrentPageIndex] = useState(0);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [touchStart, setTouchStart] = useState(null);
-  const [touchEnd, setTouchEnd] = useState(null);
+  const [zoomLevel, setZoomLevel] = useState(100); // percentage: 100%, 125%, 150%
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const scrollContainerRef = useRef(null);
   const sectionRef = useRef(null);
 
   const PLACEHOLDER_IMG = 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=800&q=80';
@@ -30,37 +29,32 @@ export default function ModulSection({ modulesList = [] }) {
     return () => observer.disconnect();
   }, []);
 
-  // Keyboard navigation for page slider
+  // Handle ESC key to close modal
   useEffect(() => {
     if (!activeModuleModal) return;
     const handleKeyDown = (e) => {
-      const pages = getModulePages(activeModuleModal);
-      if (e.key === 'ArrowRight' || e.key === ' ') {
-        setCurrentPageIndex(prev => Math.min(prev + 1, pages.length - 1));
-      } else if (e.key === 'ArrowLeft') {
-        setCurrentPageIndex(prev => Math.max(prev - 1, 0));
-      } else if (e.key === 'Escape') {
+      if (e.key === 'Escape') {
         setActiveModuleModal(null);
-        setIsFullscreen(false);
+        setZoomLevel(100);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [activeModuleModal]);
 
-  const minSwipeDistance = 45;
-  const handleTouchStart = (e) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
+  // Handle scroll in modal to show/hide "Scroll to Top" button
+  const handleModalScroll = () => {
+    if (!scrollContainerRef.current) return;
+    if (scrollContainerRef.current.scrollTop > 300) {
+      setShowScrollTop(true);
+    } else {
+      setShowScrollTop(false);
+    }
   };
-  const handleTouchMove = (e) => setTouchEnd(e.targetTouches[0].clientX);
-  const handleTouchEnd = (pagesLength) => {
-    if (!touchStart || !touchEnd) return;
-    const distance = touchStart - touchEnd;
-    if (distance > minSwipeDistance) {
-      setCurrentPageIndex(prev => Math.min(prev + 1, pagesLength - 1));
-    } else if (distance < -minSwipeDistance) {
-      setCurrentPageIndex(prev => Math.max(prev - 1, 0));
+
+  const scrollToTop = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -76,8 +70,16 @@ export default function ModulSection({ modulesList = [] }) {
 
   const handleOpenModal = (modul) => {
     setActiveModuleModal(modul);
-    setCurrentPageIndex(0);
-    setIsFullscreen(false);
+    setZoomLevel(100);
+    setShowScrollTop(false);
+  };
+
+  const handleZoomIn = () => {
+    setZoomLevel(prev => Math.min(prev + 25, 175));
+  };
+
+  const handleZoomOut = () => {
+    setZoomLevel(prev => Math.max(prev - 25, 75));
   };
 
   return (
@@ -88,15 +90,21 @@ export default function ModulSection({ modulesList = [] }) {
         {/* Header */}
         <div className="reveal text-center max-w-3xl mx-auto mb-12 space-y-3">
           <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-navy tracking-tight">
-            Modul & <span className="text-gradient-gold">Panduan Edukasi</span>
+            Modul &amp; <span className="text-gradient-gold">Panduan Edukasi</span>
           </h2>
           <p className="text-base text-slate-500">
-            Kumpulan panduan praktis, modul pelatihan proker, dan SOP terstruktur yang dapat dipelajari secara interaktif langsung di halaman web.
+            Kumpulan panduan praktis, modul pelatihan proker, dan SOP terstruktur yang dapat dipelajari langsung di halaman web.
           </p>
         </div>
 
         {/* Modules Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className={`grid gap-8 ${
+          modulesList.length === 1 
+            ? 'max-w-xl mx-auto grid-cols-1' 
+            : modulesList.length === 2 
+              ? 'max-w-5xl mx-auto grid-cols-1 md:grid-cols-2' 
+              : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+        }`}>
           {modulesList.map((modul) => {
             const pages = getModulePages(modul);
             const cover = pages[0] || modul.coverImage || modul.coverimage || PLACEHOLDER_IMG;
@@ -110,19 +118,21 @@ export default function ModulSection({ modulesList = [] }) {
                   
                   {/* Top Badge & Meta */}
                   <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <span className="px-3.5 py-1 text-xs font-extrabold rounded-full bg-amber-100 text-brand-gold border border-amber-200">
-                      {modul.category}
-                    </span>
-                    <span className="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
+                    {modul.category && (
+                      <span className="px-3.5 py-1 text-xs font-extrabold rounded-full bg-amber-100 text-brand-gold border border-amber-200">
+                        {modul.category}
+                      </span>
+                    )}
+                    <span className="text-xs font-semibold text-slate-400 flex items-center gap-1.5 ml-auto">
                       <Layers className="w-3.5 h-3.5 text-brand-gold" />
-                      <span>{modul.pages || `${pages.length} Halaman`}</span>
+                      <span>{pages.length} Halaman</span>
                     </span>
                   </div>
 
                   {/* Modul Preview Thumbnail */}
                   <div 
                     onClick={() => handleOpenModal(modul)}
-                    className="relative w-full h-56 rounded-2xl overflow-hidden border border-slate-200 shadow-sm cursor-pointer group/img"
+                    className="relative w-full h-60 sm:h-64 rounded-2xl overflow-hidden border border-slate-200 shadow-sm cursor-pointer group/img"
                   >
                     <Image
                       src={cover}
@@ -131,10 +141,10 @@ export default function ModulSection({ modulesList = [] }) {
                       sizes="(max-width: 768px) 100vw, 50vw"
                       className="object-cover group-hover/img:scale-105 transition-transform duration-500"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent flex items-end p-4">
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/90 backdrop-blur-sm text-brand-navy text-xs font-bold shadow-md">
-                        <BookOpen className="w-3.5 h-3.5 text-brand-gold" />
-                        <span>Buka & Baca Interaktif ({pages.length} Lembar)</span>
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/85 via-slate-900/20 to-transparent flex items-end p-4">
+                      <span className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/95 backdrop-blur-sm text-brand-navy text-xs sm:text-sm font-bold shadow-lg group-hover/img:bg-brand-gold group-hover/img:text-white transition-colors">
+                        <BookOpen className="w-4 h-4 text-brand-gold group-hover/img:text-white" />
+                        <span>Buka &amp; Baca Modul ({pages.length} Halaman)</span>
                       </span>
                     </div>
                   </div>
@@ -145,20 +155,24 @@ export default function ModulSection({ modulesList = [] }) {
                   </h3>
 
                   {/* Summary */}
-                  <p className="text-sm text-slate-600 leading-relaxed line-clamp-3">
-                    {modul.summary}
-                  </p>
+                  {modul.summary && (
+                    <p className="text-sm text-slate-600 leading-relaxed line-clamp-3">
+                      {modul.summary}
+                    </p>
+                  )}
 
                   {/* Author */}
-                  <div className="flex items-center gap-2.5 pt-2">
-                    <div className="w-8 h-8 rounded-full bg-amber-100 text-brand-gold flex items-center justify-center font-bold text-xs">
-                      <BookOpen className="w-4 h-4" />
+                  {modul.author && (
+                    <div className="flex items-center gap-2.5 pt-2">
+                      <div className="w-8 h-8 rounded-full bg-amber-100 text-brand-gold flex items-center justify-center font-bold text-xs">
+                        <BookOpen className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <p className="text-[11px] text-slate-400 font-semibold leading-tight">Disusun Oleh</p>
+                        <p className="text-xs font-bold text-brand-navy leading-tight">{modul.author}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-[11px] text-slate-400 font-semibold leading-tight">Disusun Oleh</p>
-                      <p className="text-xs font-bold text-brand-navy leading-tight">{modul.author}</p>
-                    </div>
-                  </div>
+                  )}
 
                 </div>
 
@@ -169,7 +183,7 @@ export default function ModulSection({ modulesList = [] }) {
                     className="btn-shimmer py-3 px-4 rounded-2xl bg-brand-navy hover:bg-brand-navyHover text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
                   >
                     <FileText className="w-4 h-4" />
-                    <span>Buka Modul</span>
+                    <span>Baca Lengkap</span>
                   </button>
 
                   {modul.fileUrl || modul.fileurl ? (
@@ -189,7 +203,7 @@ export default function ModulSection({ modulesList = [] }) {
                       className="py-3 px-4 rounded-2xl bg-amber-50 hover:bg-amber-100 text-brand-gold font-bold text-xs sm:text-sm border border-amber-200 hover:border-amber-300 flex items-center justify-center gap-2 transition-all active:scale-95"
                     >
                       <BookOpen className="w-4 h-4" />
-                      <span>Lihat Lembar</span>
+                      <span>Buka Modul</span>
                     </button>
                   )}
                 </div>
@@ -201,167 +215,132 @@ export default function ModulSection({ modulesList = [] }) {
 
       </div>
 
-      {/* Interactive Flipbook / Booklet Reader Modal */}
+      {/* Large Continuous Vertical Scroll Document Reader Modal */}
       {activeModuleModal && (() => {
         const pages = getModulePages(activeModuleModal);
-        const currentPage = pages[currentPageIndex] || pages[0] || PLACEHOLDER_IMG;
 
         return (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto">
-            <div className={`relative w-full ${isFullscreen ? 'max-w-7xl h-[94vh]' : 'max-w-4xl'} bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-2xl flex flex-col transition-all duration-300`}>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-md overflow-hidden">
+            <div className="relative w-full h-full max-w-6xl mx-auto flex flex-col bg-slate-900 shadow-2xl overflow-hidden">
               
-              {/* Modal Top Bar */}
-              <div className="px-5 py-3.5 bg-gradient-to-r from-brand-navy to-slate-900 text-white flex items-center justify-between gap-4 border-b border-white/10 flex-shrink-0">
-                <div className="min-w-0">
+              {/* Sticky Top Bar */}
+              <div className="px-4 sm:px-6 py-3.5 bg-brand-navy text-white flex items-center justify-between gap-4 border-b border-white/10 flex-shrink-0 z-20 shadow-md">
+                <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="px-2.5 py-0.5 text-[10px] font-extrabold rounded-md bg-amber-400 text-brand-navy">
-                      {activeModuleModal.category}
+                    <span className="px-2.5 py-0.5 text-[10px] font-extrabold rounded-md bg-amber-400 text-brand-navy flex-shrink-0">
+                      MODUL EDUKASI
                     </span>
                     <h3 className="text-sm sm:text-base font-bold text-white truncate">
                       {activeModuleModal.title}
                     </h3>
                   </div>
-                  <p className="text-[11px] text-slate-300 truncate">
-                    Oleh: {activeModuleModal.author} • Halaman {currentPageIndex + 1} dari {pages.length}
+                  <p className="text-[11px] text-slate-300 truncate mt-0.5">
+                    {activeModuleModal.author ? `Oleh: ${activeModuleModal.author} • ` : ''} Total {pages.length} Halaman (Scroll ke bawah untuk membaca)
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <button
-                    onClick={() => setIsFullscreen(!isFullscreen)}
-                    className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-all hidden sm:flex items-center"
-                    title={isFullscreen ? "Kecilkan" : "Layar Penuh"}
-                  >
-                    <Maximize2 className="w-4 h-4" />
-                  </button>
+                {/* Reader Controls */}
+                <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                  
+                  {/* Zoom Controls */}
+                  <div className="hidden sm:flex items-center gap-1 bg-white/10 rounded-xl p-1 border border-white/10">
+                    <button
+                      onClick={handleZoomOut}
+                      disabled={zoomLevel <= 75}
+                      className="p-1.5 rounded-lg hover:bg-white/20 disabled:opacity-30 text-white transition-all"
+                      title="Perkecil Tampilan"
+                    >
+                      <ZoomOut className="w-4 h-4" />
+                    </button>
+                    <span className="text-[11px] font-mono font-bold px-1.5 text-amber-300 select-none">
+                      {zoomLevel}%
+                    </span>
+                    <button
+                      onClick={handleZoomIn}
+                      disabled={zoomLevel >= 175}
+                      className="p-1.5 rounded-lg hover:bg-white/20 disabled:opacity-30 text-white transition-all"
+                      title="Perbesar Tampilan"
+                    >
+                      <ZoomIn className="w-4 h-4" />
+                    </button>
+                  </div>
 
+                  {/* Download PDF button if available */}
+                  {(activeModuleModal.fileUrl || activeModuleModal.fileurl) && (
+                    <a
+                      href={activeModuleModal.fileUrl || activeModuleModal.fileurl}
+                      target="_blank"
+                      rel="noreferrer"
+                      download
+                      className="px-3 py-2 rounded-xl bg-gradient-to-r from-brand-gold to-amber-600 hover:from-amber-600 hover:to-brand-gold text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">Unduh PDF</span>
+                    </a>
+                  )}
+
+                  {/* Close button */}
                   <button
-                    onClick={() => { setActiveModuleModal(null); setIsFullscreen(false); }}
-                    className="p-2 rounded-xl bg-white/10 hover:bg-red-500 text-white transition-all"
+                    onClick={() => { setActiveModuleModal(null); setZoomLevel(100); }}
+                    className="p-2 rounded-xl bg-white/10 hover:bg-red-500 text-white transition-all flex items-center gap-1 font-bold text-xs"
+                    title="Tutup (Esc)"
                   >
                     <X className="w-5 h-5" />
+                    <span className="hidden sm:inline">Tutup</span>
                   </button>
                 </div>
               </div>
 
-              {/* Main Viewer Stage with Touch Swipe */}
+              {/* Continuous Vertical Scroll Pages Container */}
               <div 
-                onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={() => handleTouchEnd(pages.length)}
-                className="relative flex-1 bg-slate-900/90 flex items-center justify-center overflow-hidden min-h-[340px] sm:min-h-[500px] p-2 sm:p-6 touch-pan-y"
+                ref={scrollContainerRef}
+                onScroll={handleModalScroll}
+                className="flex-1 overflow-y-auto overflow-x-auto p-3 sm:p-8 bg-slate-950 flex flex-col items-center space-y-6 sm:space-y-10 scrollbar-thin"
               >
-                
-                {/* Page Image */}
-                <div className="relative max-w-full max-h-[62vh] sm:max-h-[70vh] rounded-2xl overflow-hidden shadow-2xl border border-slate-700 bg-white flex items-center justify-center">
-                  <img
-                    src={currentPage}
-                    alt={`${activeModuleModal.title} - Halaman ${currentPageIndex + 1}`}
-                    className="max-h-[60vh] sm:max-h-[68vh] w-auto object-contain select-none pointer-events-none"
-                    draggable={false}
-                  />
-                </div>
-
-                {/* Left Navigation Arrow */}
-                {currentPageIndex > 0 && (
-                  <button
-                    onClick={() => setCurrentPageIndex(prev => Math.max(prev - 1, 0))}
-                    className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 p-3 rounded-full bg-brand-navy/90 hover:bg-brand-gold text-white shadow-xl backdrop-blur-md transition-all hover:scale-110 active:scale-95"
-                    title="Halaman Sebelumnya (Panah Kiri)"
+                {pages.map((pageUrl, idx) => (
+                  <div 
+                    key={idx}
+                    id={`module-page-${idx + 1}`}
+                    style={{ width: `${zoomLevel}%`, maxWidth: zoomLevel === 100 ? '900px' : `${(900 * zoomLevel) / 100}px` }}
+                    className="relative rounded-2xl overflow-hidden bg-white shadow-2xl border border-slate-700 transition-all duration-200 flex flex-col"
                   >
-                    <ChevronLeft className="w-6 h-6" />
-                  </button>
-                )}
+                    {/* Page Header Bar */}
+                    <div className="px-4 py-2 bg-slate-100 border-b border-slate-200 flex items-center justify-between text-xs text-slate-500 font-semibold select-none">
+                      <span className="flex items-center gap-1.5 text-brand-navy font-bold">
+                        <span className="w-2 h-2 rounded-full bg-brand-gold"></span>
+                        Halaman {idx + 1}
+                      </span>
+                      <span>{idx + 1} dari {pages.length}</span>
+                    </div>
 
-                {/* Right Navigation Arrow */}
-                {currentPageIndex < pages.length - 1 && (
-                  <button
-                    onClick={() => setCurrentPageIndex(prev => Math.min(prev + 1, pages.length - 1))}
-                    className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 p-3 rounded-full bg-brand-navy/90 hover:bg-brand-gold text-white shadow-xl backdrop-blur-md transition-all hover:scale-110 active:scale-95"
-                    title="Halaman Berikutnya (Panah Kanan)"
-                  >
-                    <ChevronRight className="w-6 h-6" />
-                  </button>
-                )}
+                    {/* Full Page High-Resolution Image */}
+                    <div className="w-full bg-white flex items-center justify-center p-2 sm:p-4">
+                      <img
+                        src={pageUrl}
+                        alt={`${activeModuleModal.title} - Halaman ${idx + 1}`}
+                        className="w-full h-auto object-contain rounded-lg select-none"
+                        loading={idx <= 2 ? "eager" : "lazy"}
+                      />
+                    </div>
+                  </div>
+                ))}
 
-                {/* Floating Page Counter */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md text-white text-xs font-bold shadow-lg border border-white/10">
-                  Halaman {currentPageIndex + 1} / {pages.length}
+                {/* Bottom End indicator */}
+                <div className="py-6 text-center text-slate-500 text-xs font-semibold select-none">
+                  — Akhir dari Modul ({pages.length} Halaman Selesai) —
                 </div>
               </div>
 
-              {/* Bottom Thumbnail Strip & Actions */}
-              <div className="p-3 sm:p-4 bg-white border-t border-slate-200 flex-shrink-0 space-y-3">
-                
-                {/* Thumbnails if multiple pages */}
-                {pages.length > 1 && (
-                  <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin">
-                    {pages.map((pageUrl, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setCurrentPageIndex(idx)}
-                        className={`relative w-14 h-18 sm:w-16 sm:h-20 rounded-xl overflow-hidden flex-shrink-0 border-2 transition-all ${currentPageIndex === idx ? 'border-brand-gold ring-2 ring-brand-gold/40 scale-105 shadow-md' : 'border-slate-200 opacity-60 hover:opacity-100'}`}
-                      >
-                        <img
-                          src={pageUrl}
-                          alt={`Thumbnail hal ${idx + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                        <span className="absolute bottom-0 inset-x-0 bg-slate-900/80 text-white text-[9px] font-bold text-center py-0.5">
-                          {idx + 1}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {/* Footer Controls */}
-                <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
-                  <div className="flex items-center gap-1.5 sm:gap-2">
-                    <button
-                      disabled={currentPageIndex === 0}
-                      onClick={() => setCurrentPageIndex(prev => Math.max(prev - 1, 0))}
-                      className="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-slate-100 hover:bg-amber-100 disabled:opacity-30 text-brand-navy font-bold text-xs flex items-center gap-1 transition-all"
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                      <span className="hidden xs:inline sm:inline">Sebelumnya</span>
-                    </button>
-
-                    <button
-                      disabled={currentPageIndex === pages.length - 1}
-                      onClick={() => setCurrentPageIndex(prev => Math.min(prev + 1, pages.length - 1))}
-                      className="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-slate-100 hover:bg-amber-100 disabled:opacity-30 text-brand-navy font-bold text-xs flex items-center gap-1 transition-all"
-                    >
-                      <span className="hidden xs:inline sm:inline">Berikutnya</span>
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                  </div>
-
-                  <div className="flex items-center gap-1.5 sm:gap-2">
-                    {(activeModuleModal.fileUrl || activeModuleModal.fileurl) && (
-                      <a
-                        href={activeModuleModal.fileUrl || activeModuleModal.fileurl}
-                        target="_blank"
-                        rel="noreferrer"
-                        download
-                        className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-gradient-to-r from-brand-gold to-amber-600 hover:from-amber-600 hover:to-brand-gold text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all"
-                      >
-                        <Download className="w-3.5 h-3.5" />
-                        <span className="hidden sm:inline">Unduh PDF Lengkap</span>
-                        <span className="sm:hidden">Unduh PDF</span>
-                      </a>
-                    )}
-
-                    <button
-                      onClick={() => { setActiveModuleModal(null); setIsFullscreen(false); }}
-                      className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-all"
-                    >
-                      Tutup
-                    </button>
-                  </div>
-                </div>
-
-              </div>
+              {/* Floating Scroll to Top Button */}
+              {showScrollTop && (
+                <button
+                  onClick={scrollToTop}
+                  className="absolute bottom-6 right-6 p-3 rounded-full bg-brand-gold hover:bg-amber-500 text-white shadow-2xl transition-all hover:scale-110 active:scale-95 z-30 flex items-center gap-1.5 font-bold text-xs"
+                >
+                  <ArrowUp className="w-4 h-4" />
+                  <span className="hidden sm:inline">Ke Atas</span>
+                </button>
+              )}
 
             </div>
           </div>
