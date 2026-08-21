@@ -91,7 +91,6 @@ export default function AdminPage() {
   // Form State Gallery
   const [newGallery, setNewGallery] = useState({
     title: '',
-    prokerCategory: 'Lingkungan',
     caption: '',
     image: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=800&q=80'
   });
@@ -364,7 +363,6 @@ export default function AdminPage() {
     setEditingGalleryId(null);
     setNewGallery({
       title: '',
-      prokerCategory: 'Lingkungan',
       caption: '',
       image: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=800&q=80'
     });
@@ -376,10 +374,9 @@ export default function AdminPage() {
     if (!newGallery.title) return;
 
     if (editingGalleryId) {
-      // UPDATE Mode — kirim nama kolom lowercase sesuai Supabase
+      // UPDATE Mode
       const updatePayload = {
         title: newGallery.title,
-        prokercategory: newGallery.prokerCategory,
         caption: newGallery.caption,
         image: newGallery.image
       };
@@ -405,7 +402,6 @@ export default function AdminPage() {
       const dbItem = {
         id: `gal-${Date.now()}`,
         title: newGallery.title,
-        prokercategory: newGallery.prokerCategory || 'Lingkungan',
         caption: newGallery.caption,
         image: newGallery.image
       };
@@ -421,7 +417,7 @@ export default function AdminPage() {
           return;
         }
       } else {
-        const localItem = { ...dbItem, prokerCategory: newGallery.prokerCategory || 'Lingkungan' };
+        const localItem = { ...dbItem };
         setGalleryList(prev => [localItem, ...prev]);
         showToast('success', `Foto "${dbItem.title}" berhasil ditambahkan!`);
       }
@@ -435,7 +431,6 @@ export default function AdminPage() {
     setEditingGalleryId(item.id);
     setNewGallery({
       title: item.title || '',
-      prokerCategory: item.prokercategory || item.prokerCategory || 'Lingkungan',
       caption: item.caption || '',
       image: item.image || 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=800&q=80'
     });
