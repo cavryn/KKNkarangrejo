@@ -236,7 +236,7 @@ export default function AdminPage() {
   const PLACEHOLDER_IMG = 'https://images.unsplash.com/photo-1588345921523-c2dcdb7f1dcd?auto=format&fit=crop&w=800&q=80';
 
   // Image Upload Handler
-  const handleImageFileChange = async (e, setTargetState) => {
+  const handleImageFileChange = async (e, setTargetState, fieldName = 'image') => {
     const file = e.target.files[0];
     if (!file) return;
 
@@ -244,7 +244,7 @@ export default function AdminPage() {
     try {
       const url = await uploadImage(file);
       if (url) {
-        setTargetState(prev => ({ ...prev, image: url, coverImage: url }));
+        setTargetState(prev => ({ ...prev, [fieldName]: url }));
         showToast('success', 'Foto berhasil diunggah!');
       } else {
         showToast('error', 'Gagal mendapatkan URL foto yang diunggah.');
@@ -956,7 +956,7 @@ export default function AdminPage() {
                   <input
                     type="file"
                     accept="image/*"
-                    onChange={(e) => handleImageFileChange(e, setNewProker)}
+                    onChange={(e) => handleImageFileChange(e, setNewProker, 'image')}
                     className="w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:bg-amber-100 file:text-brand-gold font-bold hover:file:bg-amber-200 cursor-pointer"
                   />
                 </div>
@@ -1098,7 +1098,7 @@ export default function AdminPage() {
                   <input
                     type="file"
                     accept="image/*"
-                    onChange={(e) => handleImageFileChange(e, setNewGallery)}
+                    onChange={(e) => handleImageFileChange(e, setNewGallery, 'image')}
                     className="w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:bg-amber-100 file:text-brand-gold font-bold hover:file:bg-amber-200 cursor-pointer"
                   />
                 </div>
@@ -1256,7 +1256,7 @@ export default function AdminPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-brand-navy mb-1">Unggah Foto Cover (Opsional)</label>
-                  <input type="file" accept="image/*" onChange={(e) => handleImageFileChange(e, setNewNews)} className="w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:bg-amber-100 file:text-brand-gold font-bold" />
+                  <input type="file" accept="image/*" onChange={(e) => handleImageFileChange(e, setNewNews, 'coverImage')} className="w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:bg-amber-100 file:text-brand-gold font-bold" />
                 </div>
               </div>
 
